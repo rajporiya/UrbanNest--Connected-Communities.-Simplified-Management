@@ -181,3 +181,56 @@ export async function sendVerificationEmail({ to, firstName, verificationUrl, ex
     throw new ApiError(500, error.message || "Failed to send verification email.")
   }
 }
+
+export function buildAccountCredentialsEmailTemplate({ firstName, email, temporaryPassword }) {
+  const displayName = escapeHtml(firstName || "Member")
+  const safeEmail = escapeHtml(email)
+  const safePassword = escapeHtml(temporaryPassword)
+
+  return `
+    <div style="margin:0;padding:0;background:#f5f7fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+      <div style="max-width:640px;margin:0 auto;padding:24px;">
+        <div style="overflow:hidden;border-radius:16px;background:#fff;box-shadow:0 10px 30px rgba(15,23,42,.08);">
+          <div style="padding:28px 32px;text-align:center;background:linear-gradient(135deg,#0f172a,#1e293b);">
+            <div style="display:inline-flex;width:56px;height:56px;align-items:center;justify-content:center;border-radius:16px;background:#fff;color:#0f172a;font-size:22px;font-weight:700;">UN</div>
+            <h1 style="margin:18px 0 0;color:#fff;font-size:24px;">Welcome to UrbanNest</h1>
+          </div>
+          <div style="padding:32px;">
+            <p style="margin:0 0 16px;font-size:16px;line-height:28px;">Hi ${displayName},</p>
+            <p style="margin:0 0 24px;color:#334155;font-size:15px;line-height:26px;">A Society Management System account has been created for you by the Committee Head.</p>
+            <div style="border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;padding:18px;">
+              <p style="margin:0 0 10px;"><strong>Email:</strong> ${safeEmail}</p>
+              <p style="margin:0;"><strong>Temporary password:</strong> ${safePassword}</p>
+            </div>
+            <p style="margin:24px 0 0;color:#b45309;font-size:13px;line-height:22px;">Sign in and change this temporary password immediately. Do not share these credentials.</p>
+          </div>
+          <div style="border-top:1px solid #e2e8f0;padding:20px 32px;text-align:center;color:#94a3b8;font-size:12px;">&copy; ${new Date().getFullYear()} UrbanNest.</div>
+        </div>
+      </div>
+    </div>
+  `
+}
+
+export async function sendAccountCredentialsEmail({ to, firstName, temporaryPassword }) {
+  try {
+    const resendClient = getEmailClient()
+    const emailFrom = getEmailFrom()
+    const html = buildAccountCredentialsEmailTemplate({ firstName, email: to, temporaryPassword })
+    const result = await resendClient.emails.send({
+      from: emailFrom,
+      to,
+      subject: "Your UrbanNest account credentials",
+      html,
+      text: `Hi ${firstName || "Member"},\n\nYour UrbanNest account has been created.\nEmail: ${to}\nTemporary password: ${temporaryPassword}\n\nSign in and change this password immediately.`,
+    })
+
+    if (result.error) {
+      throw new ApiError(502, result.error.message || "Email provider rejected the request.")
+    }
+
+    return result.data
+  } catch (error) {
+    if (error instanceof ApiError) throw error
+    throw new ApiError(500, error.message || "Failed to send account credentials email.")
+  }
+}

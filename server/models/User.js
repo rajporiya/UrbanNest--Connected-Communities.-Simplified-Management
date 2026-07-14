@@ -62,6 +62,9 @@ const userSchema = new mongoose.Schema(
       default: "Resident",
       index: true,
     },
+    tower: { type: String, trim: true, maxlength: 20, default: "", index: true },
+    floor: { type: String, trim: true, maxlength: 20, default: "", index: true },
+    flat: { type: String, trim: true, maxlength: 20, default: "", index: true },
     isActive: {
       type: Boolean,
       default: true,
@@ -70,6 +73,15 @@ const userSchema = new mongoose.Schema(
     isEmailVerified: {
       type: Boolean,
       default: false,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
     },
     emailVerificationToken: {
       type: String,
