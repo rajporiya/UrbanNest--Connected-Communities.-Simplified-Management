@@ -1,4 +1,4 @@
-import { useRef, type ChangeEvent } from "react"
+import { useId, useRef, useState, type ChangeEvent } from "react"
 import { FileUp, ImagePlus, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -6,8 +6,11 @@ import { cn } from "@/lib/utils"
 
 export interface UploadFieldProps {
   label: string
-  files: File[]
-  onFilesChange: (files: File[]) => void
+  description?: string
+  files?: File[]
+  onFilesChange?: (files: File[]) => void
+  /** Alias for onFilesChange for simple uncontrolled consumers. */
+  onChange?: (files: File[]) => void
   accept?: string
   multiple?: boolean
   maxFiles?: number
@@ -17,10 +20,15 @@ export interface UploadFieldProps {
   className?: string
 }
 
+const fileIdentity = (file: File) =>
+  `${file.name}-${file.size}-${file.lastModified}`
+
 export function UploadField({
   label,
+  description,
   files,
   onFilesChange,
+  onChange,
   accept,
   multiple = false,
   maxFiles = 1,
@@ -30,16 +38,61 @@ export function UploadField({
   className,
 }: UploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [internalFiles, setInternalFiles] = useState<File[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const descriptionId = useId()
+  const errorId = useId()
+  const currentFiles = files ?? internalFiles
+  const safeMaxFiles = Math.max(1, Math.floor(maxFiles))
+  const safeMaxSizeMb = Math.max(0.1, maxSizeMb)
+
+  const updateFiles = (nextFiles: File[]) => {
+    if (files === undefined) setInternalFiles(nextFiles)
+    onFilesChange?.(nextFiles)
+    onChange?.(nextFiles)
+  }
+
   const addFiles = (event: ChangeEvent<HTMLInputElement>) => {
-    const incoming = Array.from(event.target.files ?? []).filter(
-      (file) => file.size <= maxSizeMb * 1024 * 1024
+    const selected = Array.from(event.target.files ?? [])
+    const oversized = selected.some(
+      (file) => file.size > safeMaxSizeMb * 1024 * 1024
     )
-    onFilesChange(
-      (multiple ? [...files, ...incoming] : incoming).slice(0, maxFiles)
-    )
+    const invalidType = imageOnly && selected.some((file) => !file.type.startsWith("image/"))
+
+    if (oversized) {
+      setError(`Each file must be ${safeMaxSizeMb} MB or smaller.`)
+    } else if (invalidType) {
+      setError("Select a supported image file.")
+    } else {
+      const accepted = selected.filter(
+        (file) =>
+          file.size <= safeMaxSizeMb * 1024 * 1024 &&
+          (!imageOnly || file.type.startsWith("image/"))
+      )
+      const merged = multiple ? [...currentFiles, ...accepted] : accepted
+      const unique = merged.filter(
+        (file, index, allFiles) =>
+          allFiles.findIndex(
+            (candidate) => fileIdentity(candidate) === fileIdentity(file)
+          ) === index
+      )
+      const nextFiles = unique.slice(0, safeMaxFiles)
+      setError(
+        unique.length > safeMaxFiles
+          ? `You can upload up to ${safeMaxFiles} ${safeMaxFiles === 1 ? "file" : "files"}.`
+          : null
+      )
+      updateFiles(nextFiles)
+    }
+
     event.target.value = ""
   }
+
   const Icon = imageOnly ? ImagePlus : FileUp
+  const hint =
+    description ??
+    `Up to ${safeMaxFiles} ${safeMaxFiles === 1 ? "file" : "files"}, ${safeMaxSizeMb} MB each.`
+
   return (
     <div className={cn("min-w-0 space-y-3", className)}>
       <input
@@ -51,6 +104,7 @@ export function UploadField({
         onChange={addFiles}
         className="sr-only"
         aria-label={label}
+        aria-describedby={`${descriptionId}${error ? ` ${errorId}` : ""}`}
       />
       <button
         type="button"
@@ -60,16 +114,20 @@ export function UploadField({
       >
         <Icon aria-hidden="true" className="size-6 text-primary" />
         <span className="text-sm font-medium">{label}</span>
-        <span className="text-xs text-muted-foreground">
-          Up to {maxFiles} {maxFiles === 1 ? "file" : "files"}, {maxSizeMb}MB
-          each
+        <span id={descriptionId} className="text-xs text-muted-foreground">
+          {hint}
         </span>
       </button>
-      {files.length ? (
-        <ul className="space-y-2">
-          {files.map((file, index) => (
+      {error ? (
+        <p id={errorId} role="alert" className="text-xs text-destructive">
+          {error}
+        </p>
+      ) : null}
+      {currentFiles.length ? (
+        <ul className="space-y-2" aria-label={`${label} selected files`}>
+          {currentFiles.map((file, index) => (
             <li
-              key={`${file.name}-${file.lastModified}`}
+              key={`${fileIdentity(file)}-${index}`}
               className="flex min-w-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm"
             >
               <span className="min-w-0 flex-1 truncate">{file.name}</span>
@@ -82,8 +140,10 @@ export function UploadField({
                 size="icon-xs"
                 aria-label={`Remove ${file.name}`}
                 onClick={() =>
-                  onFilesChange(
-                    files.filter((_, itemIndex) => itemIndex !== index)
+                  updateFiles(
+                    currentFiles.filter(
+                      (_, itemIndex) => itemIndex !== index
+                    )
                   )
                 }
               >
@@ -97,7 +157,9 @@ export function UploadField({
   )
 }
 
-export function ImageUpload(props: Omit<UploadFieldProps, "imageOnly">) {
+export function ImageUpload(
+  props: Omit<UploadFieldProps, "imageOnly">
+) {
   return (
     <UploadField
       {...props}
@@ -106,6 +168,7 @@ export function ImageUpload(props: Omit<UploadFieldProps, "imageOnly">) {
     />
   )
 }
+
 export function FileUpload(props: UploadFieldProps) {
   return <UploadField {...props} />
 }

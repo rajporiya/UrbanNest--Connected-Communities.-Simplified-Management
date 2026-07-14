@@ -47,8 +47,6 @@ export const ROUTES = {
   PAYMENT_DETAILS: "/payments/:id",
   PAYMENT_CHECKOUT: "/payments/checkout",
   PAYMENT_RESULT: "/payments/:result/:id",
-  PAYMENT_SUCCESS: "/payments/success/:id",
-  PAYMENT_FAILED: "/payments/failed/:id",
   ANNOUNCEMENTS: "/announcements",
   ANNOUNCEMENT_NEW: "/announcements/new",
   ANNOUNCEMENT_DETAILS: "/announcements/:id",

@@ -75,10 +75,10 @@ const slice = createSlice({
   reducers: {},
   extraReducers: (builder) =>
     builder
-      .addCase(fetchProfile.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
+    .addCase(fetchProfile.pending, (state) => {
+      state.loading = true
+      state.error = null
+    })
       .addCase(fetchProfile.fulfilled, (state, action) => {
         state.loading = false
         state.data = action.payload
@@ -87,8 +87,9 @@ const slice = createSlice({
         state.loading = false
         state.error = action.payload ?? "Profile could not be loaded."
       })
-      .addCase(updateProfile.pending, (state) => {
-        state.saving = true
+    .addCase(updateProfile.pending, (state) => {
+      state.saving = true
+      state.error = null
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.saving = false
@@ -98,8 +99,9 @@ const slice = createSlice({
         state.saving = false
         state.error = action.payload ?? "Profile could not be updated."
       })
-      .addCase(changeProfilePassword.pending, (state) => {
-        state.passwordLoading = true
+    .addCase(changeProfilePassword.pending, (state) => {
+      state.passwordLoading = true
+      state.error = null
       })
       .addCase(changeProfilePassword.fulfilled, (state) => {
         state.passwordLoading = false
@@ -108,8 +110,9 @@ const slice = createSlice({
         state.passwordLoading = false
         state.error = action.payload ?? "Password could not be changed."
       })
-      .addCase(setProfileTwoFactor.pending, (state) => {
-        state.securityLoading = true
+    .addCase(setProfileTwoFactor.pending, (state) => {
+      state.securityLoading = true
+      state.error = null
       })
       .addCase(setProfileTwoFactor.fulfilled, (state, action) => {
         state.securityLoading = false

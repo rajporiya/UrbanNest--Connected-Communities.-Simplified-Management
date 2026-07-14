@@ -157,16 +157,16 @@ export function AppRouter() {
               <Route element={<RoleRoute allowedRoles={BILLING_MANAGERS} />}>
                 <Route path={ROUTES.MAINTENANCE_GENERATE} element={<GenerateMaintenanceBillPage />} />
               </Route>
-              <Route element={<RoleRoute allowedRoles={BILLING_ROLES} />}>
-                <Route path={ROUTES.MAINTENANCE} element={<MaintenanceBillsPage />} />
-                <Route path={ROUTES.MAINTENANCE_BILLS} element={<MaintenanceBillsPage />} />
-                <Route path={ROUTES.MAINTENANCE_DETAILS} element={<MaintenanceBillDetailsPage />} />
-                <Route path={ROUTES.PAYMENTS} element={<PaymentsPage />} />
-                <Route path={ROUTES.PAYMENT_DETAILS} element={<PaymentDetailsPage />} />
-              </Route>
               <Route element={<RoleRoute allowedRoles={PAYMENT_ROLES} />}>
                 <Route path={ROUTES.PAYMENT_CHECKOUT} element={<PaymentCheckoutPage />} />
                 <Route path={ROUTES.PAYMENT_RESULT} element={<PaymentResultPage />} />
+              </Route>
+              <Route element={<RoleRoute allowedRoles={BILLING_ROLES} />}>
+                <Route path={ROUTES.MAINTENANCE_BILLS} element={<MaintenanceBillsPage />} />
+                <Route path={ROUTES.MAINTENANCE} element={<MaintenanceBillsPage />} />
+                <Route path={ROUTES.MAINTENANCE_DETAILS} element={<MaintenanceBillDetailsPage />} />
+                <Route path={ROUTES.PAYMENTS} element={<PaymentsPage />} />
+                <Route path={ROUTES.PAYMENT_DETAILS} element={<PaymentDetailsPage />} />
               </Route>
               <Route element={<RoleRoute allowedRoles={RESIDENT_ONLY} />}>
                 <Route path={ROUTES.VISITOR_PASSES} element={<VisitorsPage />} />

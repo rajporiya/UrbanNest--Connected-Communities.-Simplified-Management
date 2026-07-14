@@ -84,7 +84,11 @@ export function ProfileForm({
               maxSizeMb={5}
               onChange={(files) => {
                 const file = files[0]
-                if (file) void fileToDataUrl(file).then(avatarField.onChange)
+                if (file) {
+                  void fileToDataUrl(file).then(avatarField.onChange)
+                } else {
+                  avatarField.onChange(null)
+                }
               }}
             />
           </div>

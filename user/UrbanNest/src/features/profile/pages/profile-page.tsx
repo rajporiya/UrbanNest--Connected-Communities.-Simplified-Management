@@ -27,8 +27,8 @@ export function ProfilePage() {
   const user = useAppSelector((state) => state.auth.user)
   const state = useAppSelector((root) => root.profile)
   useEffect(() => {
-    if (user && !state.data) void dispatch(fetchProfile(user))
-  }, [dispatch, state.data, user])
+    if (user && state.data?.id !== user.id) void dispatch(fetchProfile(user))
+  }, [dispatch, state.data?.id, user])
   if (!user) return null
   if (state.loading && !state.data)
     return <LoadingState label="Loading profile..." className="py-20" />
@@ -88,7 +88,7 @@ export function ProfilePage() {
               primaryText={profile.email}
               secondaryText={`Member since ${new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(new Date(profile.joinedAt))}`}
               badge={<RoleBadge role={profile.role} />}
-              avatarSize="xl"
+            avatarSize="lg"
             />
           </ContentCard>
           <ContentCard
