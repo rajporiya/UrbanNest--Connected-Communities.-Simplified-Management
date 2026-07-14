@@ -21,6 +21,10 @@ const LoginPage = lazy(() => import("@/features/auth/pages/login-page").then((mo
 const RegisterPage = lazy(() => import("@/features/auth/pages/register-page").then((module) => ({ default: module.RegisterPage })))
 const ForgotPasswordPage = lazy(() => import("@/features/auth/pages/forgot-password-page").then((module) => ({ default: module.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import("@/features/auth/pages/reset-password-page").then((module) => ({ default: module.ResetPasswordPage })))
+const ResidentsPage = lazy(() => import("@/features/residents/pages/residents-page").then((module) => ({ default: module.ResidentsPage })))
+const ResidentDetailsPage = lazy(() => import("@/features/residents/pages/resident-details-page").then((module) => ({ default: module.ResidentDetailsPage })))
+const AddResidentPage = lazy(() => import("@/features/residents/pages/add-resident-page").then((module) => ({ default: module.AddResidentPage })))
+const EditResidentPage = lazy(() => import("@/features/residents/pages/edit-resident-page").then((module) => ({ default: module.EditResidentPage })))
 
 function ModulePlaceholder({ title }: { title: string }) {
   return (
@@ -56,9 +60,12 @@ export function AppRouter() {
             <Route element={<DashboardLayout />}>
               <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
               <Route element={<RoleRoute allowedRoles={RESIDENT_MANAGERS} />}>
-                <Route path={ROUTES.RESIDENTS} element={<ModulePlaceholder title="Residents" />} />
+                <Route path={ROUTES.RESIDENTS} element={<ResidentsPage />} />
+                <Route path={ROUTES.RESIDENT_DETAILS} element={<ResidentDetailsPage />} />
               </Route>
               <Route element={<RoleRoute allowedRoles={HEAD_ONLY} />}>
+                <Route path={ROUTES.RESIDENT_NEW} element={<AddResidentPage />} />
+                <Route path={ROUTES.RESIDENT_EDIT} element={<EditResidentPage />} />
                 <Route path={ROUTES.COMMITTEE_MEMBERS} element={<ModulePlaceholder title="Committee Members" />} />
                 <Route path={ROUTES.SECURITY_GUARDS} element={<ModulePlaceholder title="Security Guards" />} />
               </Route>

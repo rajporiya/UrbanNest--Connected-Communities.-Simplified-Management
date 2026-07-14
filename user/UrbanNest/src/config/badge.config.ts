@@ -27,6 +27,7 @@ import type { UserRole } from "@/constants/roles.constants"
 export type StatusType =
   | "active"
   | "inactive"
+  | "blocked"
   | "pending"
   | "approved"
   | "rejected"
@@ -49,6 +50,7 @@ type BadgeConfiguration = Readonly<{
 export const statusBadgeConfig = {
   active: { label: "Active", icon: CheckCircle2, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300" },
   inactive: { label: "Inactive", icon: CircleOff, className: "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300" },
+  blocked: { label: "Blocked", icon: LockKeyhole, className: "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/60 dark:text-red-300" },
   pending: { label: "Pending", icon: Clock3, className: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-300" },
   approved: { label: "Approved", icon: BadgeCheck, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300" },
   rejected: { label: "Rejected", icon: XCircle, className: "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/60 dark:text-red-300" },
