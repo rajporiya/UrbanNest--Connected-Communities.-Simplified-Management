@@ -1,8 +1,66 @@
+import User from "../models/User.js"
+import ROLES, { DEFAULT_ROLE } from "../config/roles.js"
+import ApiError from "../utils/ApiError.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
+import { hashPassword } from "../utils/password.util.js"
 import sendResponse from "../utils/response.js"
+import { successResponse } from "../utils/response.util.js"
+import { findUserByEmail, findUserById } from "../services/user.service.js"
 
-function register(req, res) {
-  return sendResponse(res, 200, "Register route placeholder")
-}
+export const register = asyncHandler(async (req, res) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    password,
+    confirmPassword,
+    role,
+  } = req.body
+
+  const normalizedEmail = email.trim().toLowerCase()
+  const normalizedPhone = phone.trim()
+  const selectedRole = role?.trim() || DEFAULT_ROLE
+
+  const existingEmailUser = await findUserByEmail(normalizedEmail)
+
+  if (existingEmailUser) {
+    throw new ApiError(409, "Email already exists.")
+  }
+
+  const existingPhoneUser = await User.findOne({ phone: normalizedPhone }).lean()
+
+  if (existingPhoneUser) {
+    throw new ApiError(409, "Phone number already exists.")
+  }
+
+  const hashedPassword = await hashPassword(password)
+
+  const userPayload = {
+    firstName: firstName.trim(),
+    lastName: lastName.trim(),
+    email: normalizedEmail,
+    phone: normalizedPhone,
+    password: hashedPassword,
+    role: Object.values(ROLES).includes(selectedRole) ? selectedRole : DEFAULT_ROLE,
+    isActive: true,
+    isEmailVerified: false,
+  }
+
+  const createResult = await User.collection.insertOne(userPayload)
+  const registeredUser = await findUserById(createResult.insertedId)
+
+  if (!registeredUser) {
+    throw new ApiError(500, "Registration failed.")
+  }
+
+  return successResponse(
+    res,
+    "Registration completed successfully.",
+    { user: registeredUser },
+    201
+  )
+})
 
 function login(req, res) {
   return sendResponse(res, 200, "Login route placeholder")
@@ -26,4 +84,4 @@ function changePassword(req, res) {
   return sendResponse(res, 200, "Change password route placeholder")
 }
 
-export { changePassword, forgotPassword, login, profile, register, resetPassword }
+export { changePassword, forgotPassword, login, profile, resetPassword }
