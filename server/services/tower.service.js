@@ -1,5 +1,5 @@
-import Flat from "../models/Flat.js"
-import Tower from "../models/Tower.js"
+import Flat from "../models/Flat.model.js"
+import Tower from "../models/Tower.model.js"
 import ApiError from "../utils/ApiError.js"
 
 function normalizeName(name) {

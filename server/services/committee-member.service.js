@@ -1,8 +1,8 @@
 import mongoose from "mongoose"
 
 import ROLES from "../config/roles.js"
-import CommitteeMember from "../models/CommitteeMember.js"
-import User from "../models/User.js"
+import CommitteeMember from "../models/CommitteeMember.model.js"
+import User from "../models/User.model.js"
 import ApiError from "../utils/ApiError.js"
 
 const userSelect = "firstName lastName email phone profileImage role isActive"

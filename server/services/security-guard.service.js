@@ -2,8 +2,8 @@ import mongoose from "mongoose"
 
 import { SECURITY_GUARD_SHIFTS } from "../config/security-guard.js"
 import ROLES from "../config/roles.js"
-import SecurityGuard from "../models/SecurityGuard.js"
-import User from "../models/User.js"
+import SecurityGuard from "../models/SecurityGuard.model.js"
+import User from "../models/User.model.js"
 import ApiError from "../utils/ApiError.js"
 
 const userSelect = "firstName lastName email phone profileImage role isActive"
