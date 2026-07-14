@@ -119,13 +119,32 @@
 }
 
 @layer base {
+  html {
+    @apply scroll-smooth font-sans;
+  }
+
+  html,
+  body,
+  #root {
+    @apply min-h-full;
+  }
+
   * {
     @apply border-border outline-ring/50;
-    }
+  }
+
   body {
-    @apply bg-background text-foreground;
-    }
-  html {
-    @apply font-sans;
-    }
+    @apply bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(circle at top left, hsl(195 90% 45% / 0.08), transparent 30%),
+      radial-gradient(circle at top right, hsl(34 93% 52% / 0.08), transparent 28%),
+      linear-gradient(180deg, hsl(0 0% 100% / 0.78), hsl(0 0% 100% / 0.9));
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at top left, hsl(195 90% 55% / 0.16), transparent 32%),
+      radial-gradient(circle at top right, hsl(34 93% 58% / 0.15), transparent 30%),
+      linear-gradient(180deg, hsl(228 18% 9% / 0.88), hsl(228 18% 6% / 0.96));
+  }
 }
