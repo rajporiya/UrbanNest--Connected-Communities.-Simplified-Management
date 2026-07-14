@@ -33,6 +33,14 @@ const CommitteeMembersPage = lazy(() => import("@/features/committee-members/pag
 const CommitteeMemberDetailsPage = lazy(() => import("@/features/committee-members/pages/committee-member-details-page").then((module) => ({ default: module.CommitteeMemberDetailsPage })))
 const AddCommitteeMemberPage = lazy(() => import("@/features/committee-members/pages/add-committee-member-page").then((module) => ({ default: module.AddCommitteeMemberPage })))
 const EditCommitteeMemberPage = lazy(() => import("@/features/committee-members/pages/edit-committee-member-page").then((module) => ({ default: module.EditCommitteeMemberPage })))
+const TowersPage = lazy(() => import("@/features/towers/pages/towers-page").then((module) => ({ default: module.TowersPage })))
+const TowerDetailsPage = lazy(() => import("@/features/towers/pages/tower-details-page").then((module) => ({ default: module.TowerDetailsPage })))
+const AddTowerPage = lazy(() => import("@/features/towers/pages/add-tower-page").then((module) => ({ default: module.AddTowerPage })))
+const EditTowerPage = lazy(() => import("@/features/towers/pages/edit-tower-page").then((module) => ({ default: module.EditTowerPage })))
+const FlatsPage = lazy(() => import("@/features/flats/pages/flats-page").then((module) => ({ default: module.FlatsPage })))
+const FlatDetailsPage = lazy(() => import("@/features/flats/pages/flat-details-page").then((module) => ({ default: module.FlatDetailsPage })))
+const AddFlatPage = lazy(() => import("@/features/flats/pages/add-flat-page").then((module) => ({ default: module.AddFlatPage })))
+const EditFlatPage = lazy(() => import("@/features/flats/pages/edit-flat-page").then((module) => ({ default: module.EditFlatPage })))
 
 function ModulePlaceholder({ title }: { title: string }) {
   return (
@@ -82,6 +90,14 @@ export function AppRouter() {
                 <Route path={ROUTES.SECURITY_GUARD_NEW} element={<AddSecurityGuardPage />} />
                 <Route path={ROUTES.SECURITY_GUARD_DETAILS} element={<SecurityGuardDetailsPage />} />
                 <Route path={ROUTES.SECURITY_GUARD_EDIT} element={<EditSecurityGuardPage />} />
+                <Route path={ROUTES.TOWERS} element={<TowersPage />} />
+                <Route path={ROUTES.TOWER_NEW} element={<AddTowerPage />} />
+                <Route path={ROUTES.TOWER_DETAILS} element={<TowerDetailsPage />} />
+                <Route path={ROUTES.TOWER_EDIT} element={<EditTowerPage />} />
+                <Route path={ROUTES.FLATS} element={<FlatsPage />} />
+                <Route path={ROUTES.FLAT_NEW} element={<AddFlatPage />} />
+                <Route path={ROUTES.FLAT_DETAILS} element={<FlatDetailsPage />} />
+                <Route path={ROUTES.FLAT_EDIT} element={<EditFlatPage />} />
               </Route>
               <Route element={<RoleRoute allowedRoles={COMPLAINT_ROLES} />}>
                 <Route path={ROUTES.COMPLAINTS} element={<ModulePlaceholder title="Complaints" />} />
