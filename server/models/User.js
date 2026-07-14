@@ -87,6 +87,34 @@ const userSchema = new mongoose.Schema(
       default: null,
       select: false,
     },
+    refreshToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    sessionId: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    lastLoginAt: {
+      type: Date,
+      default: null,
+    },
+    lastLogoutAt: {
+      type: Date,
+      default: null,
+    },
+    lastLoginIP: {
+      type: String,
+      default: null,
+      maxlength: 64,
+    },
+    lastUserAgent: {
+      type: String,
+      default: null,
+      maxlength: 512,
+    },
   },
   {
     timestamps: true,

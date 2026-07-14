@@ -1,7 +1,11 @@
 import User from "../models/User.js"
 import ApiError from "../utils/ApiError.js"
 import { sendResetPasswordEmail, sendVerificationEmail } from "./email.service.js"
-import { generateAccessToken } from "../utils/jwt.util.js"
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../utils/jwt.util.js"
 import { comparePassword, hashPassword } from "../utils/password.util.js"
 import crypto from "crypto"
 
@@ -104,7 +108,31 @@ async function registerUser(userData) {
   return createdUser
 }
 
-async function loginUser(loginData) {
+function hashRefreshToken(refreshToken) {
+  return crypto.createHash("sha256").update(refreshToken).digest("hex")
+}
+
+function hashSessionId(sessionId) {
+  return crypto.createHash("sha256").update(sessionId).digest("hex")
+}
+
+async function createSessionTokens(user, sessionId) {
+  const tokenPayload = {
+    userId: user._id.toString(),
+    email: user.email,
+    role: user.role,
+    sessionId,
+  }
+
+  const [accessToken, refreshToken] = await Promise.all([
+    generateAccessToken(tokenPayload),
+    generateRefreshToken({ userId: tokenPayload.userId, sessionId }),
+  ])
+
+  return { accessToken, refreshToken }
+}
+
+async function loginUser(loginData, sessionData = {}) {
   const { email, password } = loginData
 
   const normalizedEmail = email?.trim().toLowerCase()
@@ -124,19 +152,118 @@ async function loginUser(loginData) {
     throw new ApiError(401, "Invalid credentials.")
   }
 
-  const accessToken = await generateAccessToken({
-    userId: user._id,
-    email: user.email,
-    role: user.role,
-  })
+  const sessionId = crypto.randomBytes(32).toString("hex")
+  const { accessToken, refreshToken } = await createSessionTokens(user, sessionId)
+  const loginAt = new Date()
+  const updatedUser = await User.findByIdAndUpdate(
+    user._id,
+    {
+      $set: {
+        refreshToken: hashRefreshToken(refreshToken),
+        sessionId: hashSessionId(sessionId),
+        lastLoginAt: loginAt,
+        lastLoginIP: String(sessionData.ip || "").slice(0, 64) || null,
+        lastUserAgent: String(sessionData.userAgent || "").slice(0, 512) || null,
+      },
+    },
+    { new: true, runValidators: true }
+  )
 
-  const sanitizedUser = user.toObject ? user.toObject() : { ...user }
+  if (!updatedUser) {
+    throw new ApiError(500, "Unable to create login session.")
+  }
+
+  const sanitizedUser = updatedUser.toObject ? updatedUser.toObject() : { ...updatedUser }
   delete sanitizedUser.password
+  delete sanitizedUser.refreshToken
 
   return {
     accessToken,
+    refreshToken,
     user: sanitizedUser,
   }
+}
+
+async function refreshUserSession(refreshToken) {
+  if (!refreshToken || typeof refreshToken !== "string") {
+    throw new ApiError(400, "Refresh token is required.")
+  }
+
+  let decodedToken
+
+  try {
+    decodedToken = await verifyRefreshToken(refreshToken)
+  } catch (error) {
+    throw new ApiError(401, error.message || "Invalid refresh token.")
+  }
+
+  const userId = decodedToken.userId || decodedToken.sub
+  const sessionId = decodedToken.sessionId
+
+  if (!userId || !sessionId) {
+    throw new ApiError(401, "Invalid refresh token payload.")
+  }
+
+  const storedTokenHash = hashRefreshToken(refreshToken)
+  const storedSessionId = hashSessionId(sessionId)
+  const user = await User.findOne({
+    _id: userId,
+    refreshToken: storedTokenHash,
+    sessionId: storedSessionId,
+  })
+
+  if (!user || !user.isActive) {
+    throw new ApiError(401, "Refresh token is invalid or has been revoked.")
+  }
+
+  const tokens = await createSessionTokens(user, sessionId)
+  const rotatedUser = await User.findOneAndUpdate(
+    { _id: user._id, refreshToken: storedTokenHash, sessionId: storedSessionId },
+    { $set: { refreshToken: hashRefreshToken(tokens.refreshToken) } },
+    { new: true }
+  )
+
+  if (!rotatedUser) {
+    throw new ApiError(401, "Refresh token has already been used or revoked.")
+  }
+
+  return tokens
+}
+
+async function validateActiveSession(userId, sessionId) {
+  if (!userId || !sessionId) {
+    return false
+  }
+
+  const user = await User.findOne({
+    _id: userId,
+    sessionId: hashSessionId(sessionId),
+    refreshToken: { $exists: true, $ne: null },
+    isActive: true,
+  }).select("_id")
+
+  return Boolean(user)
+}
+
+async function logoutUser(userId, sessionId) {
+  if (!userId || !sessionId) {
+    throw new ApiError(401, "Unauthorized access.")
+  }
+
+  const user = await User.findOneAndUpdate(
+    { _id: userId, sessionId: hashSessionId(sessionId) },
+    {
+      $unset: { refreshToken: "", sessionId: "" },
+      $set: { lastLogoutAt: new Date() },
+    },
+    { new: true }
+  )
+
+  if (!user) {
+    throw new ApiError(404, "User not found.")
+  }
+
+  return { message: "Logout successful." }
 }
 
 async function getLoggedInUserProfile(userId) {
@@ -393,10 +520,13 @@ export {
   generateEmailVerificationToken,
   getLoggedInUserProfile,
   loginUser,
+  logoutUser,
+  refreshUserSession,
   resetPasswordUser,
   changePasswordUser,
   registerUser,
   sendUserVerificationEmail,
   updateUser,
+  validateActiveSession,
   verifyUserEmail,
 }

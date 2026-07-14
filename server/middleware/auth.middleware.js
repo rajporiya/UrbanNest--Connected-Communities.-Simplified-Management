@@ -1,5 +1,6 @@
 import { verifyAccessToken } from "../utils/jwt.util.js"
 import { errorResponse } from "../utils/response.util.js"
+import { validateActiveSession } from "../services/user.service.js"
 
 function getBearerToken(authorizationHeader) {
   if (!authorizationHeader || typeof authorizationHeader !== "string") {
@@ -48,6 +49,13 @@ async function authMiddleware(req, res, next) {
 
     if (!authenticatedUser) {
       return errorResponse(res, "Unauthorized access", [], 403)
+    }
+
+    const userId = authenticatedUser.userId || authenticatedUser.sub
+    const isActiveSession = await validateActiveSession(userId, authenticatedUser.sessionId)
+
+    if (!isActiveSession) {
+      return errorResponse(res, "Session is invalid or has ended", [], 401)
     }
 
     req.user = authenticatedUser

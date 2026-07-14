@@ -11,6 +11,8 @@ import {
   findUserById,
   getLoggedInUserProfile,
   loginUser,
+  logoutUser,
+  refreshUserSession,
   resetPasswordUser,
   sendUserVerificationEmail,
   verifyUserEmail,
@@ -75,7 +77,10 @@ export const register = asyncHandler(async (req, res) => {
 })
 
 export const login = asyncHandler(async (req, res) => {
-  const loginResult = await loginUser(req.body)
+  const loginResult = await loginUser(req.body, {
+    ip: req.ip,
+    userAgent: req.get("user-agent"),
+  })
 
   return successResponse(res, "Login successful.", loginResult)
 })
@@ -112,6 +117,19 @@ export const changePassword = asyncHandler(async (req, res) => {
 
 export const verifyEmail = asyncHandler(async (req, res) => {
   const result = await verifyUserEmail(req.query.token)
+
+  return successResponse(res, result.message, null, 200)
+})
+
+export const refreshToken = asyncHandler(async (req, res) => {
+  const tokens = await refreshUserSession(req.body.refreshToken)
+
+  return successResponse(res, "Session refreshed successfully.", tokens, 200)
+})
+
+export const logout = asyncHandler(async (req, res) => {
+  const userId = req.user?.userId || req.user?.id || req.user?._id
+  const result = await logoutUser(userId, req.user?.sessionId)
 
   return successResponse(res, result.message, null, 200)
 })
