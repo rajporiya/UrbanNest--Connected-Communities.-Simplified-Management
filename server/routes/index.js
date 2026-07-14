@@ -5,6 +5,7 @@ import authRoutes from "./auth.routes.js"
 import userRoutes from "./user.routes.js"
 import towerRoutes from "./tower.routes.js"
 import flatRoutes from "./flat.routes.js"
+import residentRoutes from "./resident.routes.js"
 
 const router = express.Router()
 
@@ -13,5 +14,6 @@ router.use("/auth", authRoutes)
 router.use("/users", userRoutes)
 router.use("/towers", towerRoutes)
 router.use("/flats", flatRoutes)
+router.use("/residents", residentRoutes)
 
 export default router
