@@ -45,8 +45,28 @@ type SheetContentProps = React.HTMLAttributes<HTMLDivElement> & {
 
 export function SheetContent({ className, side = "right", children, ...props }: SheetContentProps) {
   const context = React.useContext(SheetContext)
+  const panelRef = React.useRef<HTMLDivElement>(null)
+  const open = context?.open ?? false
+  const onOpenChange = context?.onOpenChange
 
-  if (!context?.open || typeof document === "undefined") {
+  React.useEffect(() => {
+    if (!open || !onOpenChange) return
+
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onOpenChange(false)
+    }
+    const frame = globalThis.requestAnimationFrame(() => panelRef.current?.focus())
+    document.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      globalThis.cancelAnimationFrame(frame)
+      document.removeEventListener("keydown", handleKeyDown)
+      previouslyFocused?.focus()
+    }
+  }, [onOpenChange, open])
+
+  if (!open || typeof document === "undefined") {
     return null
   }
 
@@ -59,8 +79,12 @@ export function SheetContent({ className, side = "right", children, ...props }: 
         onClick={() => context.onOpenChange(false)}
       />
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
         className={cn(
-          "absolute top-0 h-full border bg-background shadow-2xl",
+          "absolute top-0 h-full border bg-background shadow-2xl outline-none",
           side === "left" ? "left-0" : "right-0",
           className
         )}

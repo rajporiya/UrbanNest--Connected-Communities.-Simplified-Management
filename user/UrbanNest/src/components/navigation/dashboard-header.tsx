@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { Menu } from "@base-ui/react/menu"
 import { Bell, LogOut, MenuIcon, Search, Settings, UserRound } from "lucide-react"
 import { Link } from "react-router-dom"
@@ -6,12 +6,15 @@ import { Link } from "react-router-dom"
 import { RoleBadge } from "@/components/common/role-badge"
 import { ThemeModeDropdown } from "@/components/common/theme-mode-dropdown"
 import { UserAvatar } from "@/components/common/user-avatar"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ROUTES } from "@/constants/routes.constants"
 import { clearSession } from "@/features/auth/store/auth.slice"
+import { openGlobalSearch } from "@/features/global-search/store/global-search.slice"
+import { NotificationDrawer } from "@/features/notifications/components/notification-drawer"
+import { NotificationUnreadCounter } from "@/features/notifications/components/notification-unread-counter"
+import { fetchNotifications } from "@/features/notifications/store/notifications.slice"
 import { useAppDispatch } from "@/hooks/use-app-dispatch"
 import { useAppSelector } from "@/hooks/use-app-selector"
 import { cn } from "@/lib/utils"
@@ -26,8 +29,13 @@ export interface DashboardHeaderProps {
 export function DashboardHeader({ title = "Dashboard", breadcrumbs, onOpenMobileMenu, className }: DashboardHeaderProps) {
   const dispatch = useAppDispatch()
   const user = useAppSelector((state) => state.auth.user)
-  const unreadCount = 3
+  const unreadCount = useAppSelector((state) => state.notifications.unreadCount)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const name = user ? `${user.firstName} ${user.lastName}`.trim() : "UrbanNest user"
+
+  useEffect(() => {
+    void dispatch(fetchNotifications({ page: 1, limit: 8 }))
+  }, [dispatch])
 
   return (
     <header className={cn("sticky top-0 z-40 flex min-h-16 min-w-0 items-center gap-2 border-b border-border bg-background/90 px-3 backdrop-blur sm:px-5", className)}>
@@ -41,7 +49,7 @@ export function DashboardHeader({ title = "Dashboard", breadcrumbs, onOpenMobile
 
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger render={<Button type="button" variant="ghost" size="icon-sm" aria-label="Search" className="hidden sm:inline-flex" />}>
+          <TooltipTrigger render={<Button type="button" variant="ghost" size="icon-sm" aria-label="Search (Ctrl or Command K)" onClick={() => dispatch(openGlobalSearch())} />}>
             <Search aria-hidden="true" />
           </TooltipTrigger>
           <TooltipContent>Search</TooltipContent>
@@ -50,13 +58,14 @@ export function DashboardHeader({ title = "Dashboard", breadcrumbs, onOpenMobile
       <ThemeModeDropdown />
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger render={<Button type="button" variant="ghost" size="icon-sm" aria-label={unreadCount ? `${unreadCount} unread notifications` : "Notifications"} className="relative" />}>
+          <TooltipTrigger render={<Button type="button" variant="ghost" size="icon-sm" aria-label={unreadCount ? `${unreadCount} unread notifications` : "Notifications"} className="relative" onClick={() => setNotificationsOpen(true)} />}>
             <Bell aria-hidden="true" />
-            {unreadCount > 0 ? <Badge className="absolute -top-1 -right-1 min-w-4 justify-center px-1 py-0 text-[10px]">{unreadCount}</Badge> : null}
+            <NotificationUnreadCounter count={unreadCount} className="absolute -right-1 -top-1" />
           </TooltipTrigger>
           <TooltipContent>Notifications</TooltipContent>
         </Tooltip>
       </TooltipProvider>
+      <NotificationDrawer open={notificationsOpen} onOpenChange={setNotificationsOpen} />
 
       {user ? (
         <Menu.Root>

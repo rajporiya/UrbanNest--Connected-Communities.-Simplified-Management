@@ -1,0 +1,30 @@
+import { useEffect, useMemo } from "react"
+import { CreditCard, Eye, Plus } from "lucide-react"
+import { useSelector } from "react-redux"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
+
+import { StatusBadge } from "@/components/common/status-badge"
+import { ErrorState } from "@/components/feedback/error-state"
+import { PageHeader } from "@/components/layout/page-header"
+import { DataTable, FilterSelect, SearchInput, SortSelect, TablePagination, TableToolbar, type DataTableColumn } from "@/components/table"
+import { Button } from "@/components/ui/button"
+import { ROLES } from "@/constants/roles.constants"
+import { ROUTES } from "@/constants/routes.constants"
+import { paymentMethodOptions } from "@/features/payments/data/payments.mock"
+import { fetchPayments, type PaymentsState } from "@/features/payments/store/payments.slice"
+import type { PaymentMethod, PaymentQuery, PaymentSort, PaymentStatus, PaymentTransaction } from "@/features/payments/types/payment.types"
+import { useAppDispatch } from "@/hooks/use-app-dispatch"
+
+const statuses: PaymentStatus[] = ["paid", "pending", "failed", "refunded"]
+const sortOptions = [{ label: "Newest", value: "newest" }, { label: "Oldest", value: "oldest" }, { label: "Amount high-low", value: "amount_desc" }, { label: "Amount low-high", value: "amount_asc" }]
+const money = (value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value)
+const date = (value: string) => new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value))
+export function PaymentsPage() {
+  const dispatch = useAppDispatch(); const navigate = useNavigate(); const [params, setParams] = useSearchParams(); const { transactions, pagination, listLoading, error } = useSelector((state: { payments: PaymentsState }) => state.payments); const currentUser = useSelector((state: { auth: { user: { id: string; role: string } | null } }) => state.auth.user)
+  const page = Math.max(1, Number(params.get("page")) || 1); const limit = Math.max(1, Number(params.get("limit")) || 10); const search = params.get("search") ?? ""; const status = params.get("status") ?? "all"; const method = params.get("method") ?? "all"; const sort = params.get("sort") ?? "newest"
+  const query = useMemo<PaymentQuery>(() => ({ page, limit, search: search || undefined, status: status === "all" ? undefined : status as PaymentStatus, method: method === "all" ? undefined : method as PaymentMethod, residentId: currentUser?.role === ROLES.RESIDENT ? currentUser.id : undefined, sort: sort as PaymentSort }), [page, limit, search, status, method, sort, currentUser]); useEffect(() => { void dispatch(fetchPayments(query)) }, [dispatch, query])
+  const update = (key: string, value: string, reset = true) => { const next = new URLSearchParams(params); if (!value || value === "all") next.delete(key); else next.set(key, value); if (reset) next.set("page", "1"); setParams(next, { replace: true }) }; const reload = () => dispatch(fetchPayments(query)).unwrap().then(() => undefined)
+  const columns: DataTableColumn<PaymentTransaction>[] = [{ id: "transaction", header: "Transaction", cell: (item) => <div><p className="font-semibold">{item.gatewayPaymentId ?? item.gatewayOrderId}</p><p className="text-xs text-muted-foreground">{item.billNumber}</p></div> }, { id: "resident", header: "Resident", cell: (item) => <div><p>{item.residentName}</p><p className="text-xs text-muted-foreground">{item.flatNumber}</p></div> }, { id: "date", header: "Date", cell: (item) => date(item.createdAt), hideOnMobile: true }, { id: "method", header: "Method", cell: (item) => item.method, hideOnMobile: true }, { id: "amount", header: "Amount", cell: (item) => <span className="font-semibold">{money(item.amount)}</span> }, { id: "status", header: "Status", cell: (item) => <StatusBadge status={item.status} /> }, { id: "actions", header: "", className: "text-right", cell: (item) => <Button size="icon-xs" variant="ghost" render={<Link to={`${ROUTES.PAYMENTS}/${item.id}`} />} aria-label={`View transaction ${item.id}`}><Eye /></Button> }]
+  if (error && !transactions.length) return <ErrorState title="Unable to load payments" description={error} onRetry={reload} />
+  return <div className="space-y-6"><PageHeader title="Payments" description="Review resident payments, receipts, and gateway transactions." icon={<CreditCard />} actions={<Button render={<Link to={`${ROUTES.PAYMENTS}/checkout`} />}><Plus />New mock payment</Button>} /><TableToolbar search={<SearchInput value={search} onChange={(value) => update("search", value)} placeholder="Search payment, bill or resident" />} filters={<><FilterSelect value={status} onValueChange={(value) => update("status", value)} options={statuses.map((value) => ({ label: value[0].toUpperCase() + value.slice(1), value }))} placeholder="Status" allLabel="All statuses" /><FilterSelect value={method} onValueChange={(value) => update("method", value)} options={paymentMethodOptions.map((value) => ({ label: value, value }))} placeholder="Method" allLabel="All methods" /></>} sort={<SortSelect value={sort} onValueChange={(value) => update("sort", value)} options={sortOptions} />} activeFilterCount={[search, status !== "all" && status, method !== "all" && method].filter(Boolean).length} onClearFilters={() => setParams({ page: "1", sort }, { replace: true })} /><DataTable data={transactions} columns={columns} getRowId={(item) => item.id} loading={listLoading && !transactions.length} emptyTitle="No transactions found" emptyDescription="Try changing the filters or start a mock payment." onRowClick={(item) => navigate(`${ROUTES.PAYMENTS}/${item.id}`)} /><TablePagination page={pagination.page} totalPages={pagination.totalPages} totalItems={pagination.total} pageSize={pagination.limit} onPageChange={(value) => update("page", String(value), false)} onPageSizeChange={(value) => update("limit", String(value))} disabled={listLoading} /></div>
+}
