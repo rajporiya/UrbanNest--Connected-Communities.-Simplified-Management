@@ -5,7 +5,12 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { hashPassword } from "../utils/password.util.js"
 import sendResponse from "../utils/response.js"
 import { successResponse } from "../utils/response.util.js"
-import { findUserByEmail, findUserById, loginUser } from "../services/user.service.js"
+import {
+  findUserByEmail,
+  findUserById,
+  getLoggedInUserProfile,
+  loginUser,
+} from "../services/user.service.js"
 
 export const register = asyncHandler(async (req, res) => {
   const {
@@ -76,14 +81,15 @@ function resetPassword(req, res) {
   return sendResponse(res, 200, "Reset password route placeholder")
 }
 
-function profile(req, res) {
-  return sendResponse(res, 200, "Profile route placeholder", {
-    user: req.user,
-  })
-}
+export const profile = asyncHandler(async (req, res) => {
+  const userId = req.user?.userId || req.user?.id || req.user?._id
+  const userProfile = await getLoggedInUserProfile(userId)
+
+  return successResponse(res, "Profile fetched successfully.", { user: userProfile })
+})
 
 function changePassword(req, res) {
   return sendResponse(res, 200, "Change password route placeholder")
 }
 
-export { changePassword, forgotPassword, profile, resetPassword }
+export { changePassword, forgotPassword, resetPassword }

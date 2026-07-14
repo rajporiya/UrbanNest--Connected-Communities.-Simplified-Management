@@ -137,4 +137,40 @@ async function loginUser(loginData) {
   }
 }
 
-export { createUser, deactivateUser, findUserByEmail, findUserById, loginUser, registerUser, updateUser }
+async function getLoggedInUserProfile(userId) {
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized access.")
+  }
+
+  const user = await findUserById(userId)
+
+  if (!user) {
+    throw new ApiError(404, "User not found.")
+  }
+
+  const profile = user.toObject ? user.toObject() : { ...user }
+
+  return {
+    id: profile._id,
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    email: profile.email,
+    phone: profile.phone,
+    profileImage: profile.profileImage,
+    role: profile.role,
+    isActive: profile.isActive,
+    isEmailVerified: profile.isEmailVerified,
+    createdAt: profile.createdAt,
+  }
+}
+
+export {
+  createUser,
+  deactivateUser,
+  findUserByEmail,
+  findUserById,
+  getLoggedInUserProfile,
+  loginUser,
+  registerUser,
+  updateUser,
+}
