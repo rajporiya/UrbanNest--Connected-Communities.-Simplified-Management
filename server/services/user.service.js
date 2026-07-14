@@ -205,6 +205,10 @@ async function resetPasswordUser(resetToken, newPassword) {
     throw new ApiError(400, "Reset token is required.")
   }
 
+  if (!newPassword) {
+    throw new ApiError(400, "New password is required.")
+  }
+
   const hashedResetToken = crypto.createHash("sha256").update(resetToken).digest("hex")
   const user = await User.findOne({
     passwordResetToken: hashedResetToken,
@@ -258,10 +262,20 @@ async function changePasswordUser(userId, currentPassword, newPassword) {
     throw new ApiError(403, "Account is inactive.")
   }
 
+  if (!currentPassword || !newPassword) {
+    throw new ApiError(400, "Current password and new password are required.")
+  }
+
   const isCurrentPasswordValid = await comparePassword(currentPassword, user.password)
 
   if (!isCurrentPasswordValid) {
     throw new ApiError(401, "Current password is incorrect.")
+  }
+
+  const isSamePassword = await comparePassword(newPassword, user.password)
+
+  if (isSamePassword) {
+    throw new ApiError(400, "New password must be different from current password.")
   }
 
   const hashedPassword = await hashPassword(newPassword)
@@ -271,6 +285,10 @@ async function changePasswordUser(userId, currentPassword, newPassword) {
     {
       $set: {
         password: hashedPassword,
+      },
+      $unset: {
+        passwordResetToken: "",
+        passwordResetExpires: "",
       },
     },
     {

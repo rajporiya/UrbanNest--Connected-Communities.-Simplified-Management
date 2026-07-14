@@ -3,14 +3,15 @@ import ROLES, { DEFAULT_ROLE } from "../config/roles.js"
 import ApiError from "../utils/ApiError.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { hashPassword } from "../utils/password.util.js"
-import sendResponse from "../utils/response.js"
 import { successResponse } from "../utils/response.util.js"
 import {
-      forgotPasswordUser,
+  changePasswordUser,
+  forgotPasswordUser,
   findUserByEmail,
   findUserById,
   getLoggedInUserProfile,
   loginUser,
+  resetPasswordUser,
 } from "../services/user.service.js"
 
 
@@ -75,14 +76,6 @@ export const login = asyncHandler(async (req, res) => {
   return successResponse(res, "Login successful.", loginResult)
 })
 
-function forgotPassword(req, res) {
-  return sendResponse(res, 200, "Forgot password route placeholder")
-}
-
-function resetPassword(req, res) {
-  return sendResponse(res, 200, "Reset password route placeholder")
-}
-
 export const profile = asyncHandler(async (req, res) => {
   const userId = req.user?.userId || req.user?.id || req.user?._id
   const userProfile = await getLoggedInUserProfile(userId)
@@ -96,8 +89,19 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   return successResponse(res, result.message, null, 200)
 })
 
-function changePassword(req, res) {
-  return sendResponse(res, 200, "Change password route placeholder")
-}
+export const resetPassword = asyncHandler(async (req, res) => {
+  const result = await resetPasswordUser(req.body.token, req.body.newPassword)
 
-export { changePassword, forgotPassword, resetPassword }
+  return successResponse(res, result.message, null, 200)
+})
+
+export const changePassword = asyncHandler(async (req, res) => {
+  const userId = req.user?.userId || req.user?.id || req.user?._id
+  const result = await changePasswordUser(
+    userId,
+    req.body.currentPassword,
+    req.body.newPassword
+  )
+
+  return successResponse(res, result.message, null, 200)
+})

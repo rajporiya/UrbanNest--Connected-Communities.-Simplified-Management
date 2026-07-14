@@ -4,15 +4,12 @@ import { validationResultMiddleware } from "./register.validator.js"
 
 const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,20}$/
 
-export const resetPasswordValidation = [
-  body("token")
-    .trim()
+export const changePasswordValidation = [
+  body("currentPassword")
     .notEmpty()
-    .withMessage("Token is required")
+    .withMessage("Current password is required")
     .isString()
-    .withMessage("Token must be a valid string")
-    .matches(/^[a-f0-9]{64}$/i)
-    .withMessage("Token must be a valid reset token"),
+    .withMessage("Current password must be a valid string"),
   body("newPassword")
     .trim()
     .notEmpty()
@@ -22,7 +19,9 @@ export const resetPasswordValidation = [
     .matches(strongPasswordPattern)
     .withMessage(
       "New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-    ),
+    )
+    .custom((value, { req }) => value !== req.body.currentPassword)
+    .withMessage("New password must be different from current password"),
   body("confirmPassword")
     .trim()
     .notEmpty()
@@ -33,4 +32,4 @@ export const resetPasswordValidation = [
 
 export { validationResultMiddleware }
 
-export default resetPasswordValidation
+export default changePasswordValidation
