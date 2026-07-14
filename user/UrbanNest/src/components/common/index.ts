@@ -1,3 +1,7 @@
 export { ContentCard } from "@/components/common/content-card"
+export { PriorityBadge } from "@/components/common/priority-badge"
+export { RoleBadge } from "@/components/common/role-badge"
+export { StatCard } from "@/components/common/stat-card"
+export { StatusBadge } from "@/components/common/status-badge"
 export { ThemeModeDropdown } from "@/components/common/theme-mode-dropdown"
 export { ThemeToggle } from "@/components/common/theme-toggle"
