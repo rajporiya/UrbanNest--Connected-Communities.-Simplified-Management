@@ -10,6 +10,10 @@ import { comparePassword, hashPassword } from "../utils/password.util.js"
 import crypto from "crypto"
 
 import { DEFAULT_ROLE } from "../config/roles.js"
+import {
+  deleteCloudinaryImage,
+  uploadProfileImageToCloudinary,
+} from "./profile-image.service.js"
 
 async function createUser(userData) {
   return User.create(userData)
@@ -90,7 +94,10 @@ async function registerUser(userData) {
     phone: normalizedPhone,
     password: hashedPassword,
     role: role?.trim() || DEFAULT_ROLE,
-    profileImage: profileImage || "",
+    profileImage:
+      typeof profileImage === "string"
+        ? { public_id: null, secure_url: profileImage }
+        : profileImage || { public_id: null, secure_url: "" },
     isActive: typeof isActive === "boolean" ? isActive : true,
     isEmailVerified: typeof isEmailVerified === "boolean" ? isEmailVerified : false,
   }
@@ -327,6 +334,130 @@ async function forgotPasswordUser(email) {
   }
 }
 
+function serializeUserProfile(user) {
+  const profile = user.toObject ? user.toObject() : { ...user }
+
+  return {
+    id: profile._id,
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    email: profile.email,
+    phone: profile.phone,
+    profileImage: profile.profileImage || { public_id: null, secure_url: "" },
+    role: profile.role,
+    isActive: profile.isActive,
+    isEmailVerified: profile.isEmailVerified,
+    createdAt: profile.createdAt,
+    updatedAt: profile.updatedAt,
+  }
+}
+
+async function getMyProfile(userId) {
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized access.")
+  }
+
+  const user = await findUserById(userId)
+
+  if (!user) {
+    throw new ApiError(404, "User not found.")
+  }
+
+  return serializeUserProfile(user)
+}
+
+async function updateMyProfile(userId, profileData) {
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized access.")
+  }
+
+  const allowedFields = ["firstName", "lastName", "phone", "profileImage"]
+  const updates = Object.fromEntries(
+    Object.entries(profileData).filter(([key]) => allowedFields.includes(key))
+  )
+
+  if (!Object.keys(updates).length) {
+    throw new ApiError(400, "At least one profile field is required.")
+  }
+
+  if (updates.phone) {
+    const existingPhoneUser = await User.findOne({
+      phone: updates.phone,
+      _id: { $ne: userId },
+    }).lean()
+
+    if (existingPhoneUser) {
+      throw new ApiError(409, "Phone number already exists.")
+    }
+  }
+
+  if (typeof updates.profileImage === "string") {
+    updates.profileImage = { public_id: null, secure_url: updates.profileImage }
+  }
+
+  const user = await User.findByIdAndUpdate(
+    userId,
+    { $set: updates },
+    { new: true, runValidators: true }
+  )
+
+  if (!user) {
+    throw new ApiError(404, "User not found.")
+  }
+
+  return serializeUserProfile(user)
+}
+
+async function uploadMyProfileImage(userId, file) {
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized access.")
+  }
+
+  if (!file?.buffer) {
+    throw new ApiError(400, "Profile image is required.")
+  }
+
+  const currentUser = await findUserById(userId)
+
+  if (!currentUser) {
+    throw new ApiError(404, "User not found.")
+  }
+
+  const uploadedImage = await uploadProfileImageToCloudinary(file.buffer, userId)
+  let updatedUser
+
+  try {
+    updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          profileImage: {
+            public_id: uploadedImage.public_id,
+            secure_url: uploadedImage.secure_url,
+          },
+        },
+      },
+      { new: true, runValidators: true }
+    )
+  } catch (error) {
+    await deleteCloudinaryImage(uploadedImage.public_id).catch(() => null)
+    throw error
+  }
+
+  if (!updatedUser) {
+    await deleteCloudinaryImage(uploadedImage.public_id).catch(() => null)
+    throw new ApiError(404, "User not found.")
+  }
+
+  const oldPublicId = currentUser.profileImage?.public_id
+
+  if (oldPublicId && oldPublicId !== uploadedImage.public_id) {
+    await deleteCloudinaryImage(oldPublicId)
+  }
+
+  return serializeUserProfile(updatedUser)
+}
+
 async function generateEmailVerificationToken(userId) {
   const user = await findUserById(userId)
 
@@ -519,6 +650,7 @@ export {
   forgotPasswordUser,
   generateEmailVerificationToken,
   getLoggedInUserProfile,
+  getMyProfile,
   loginUser,
   logoutUser,
   refreshUserSession,
@@ -527,6 +659,8 @@ export {
   registerUser,
   sendUserVerificationEmail,
   updateUser,
+  updateMyProfile,
+  uploadMyProfileImage,
   validateActiveSession,
   verifyUserEmail,
 }

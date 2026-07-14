@@ -47,8 +47,14 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     profileImage: {
-      type: String,
-      default: "",
+      public_id: {
+        type: String,
+        default: null,
+      },
+      secure_url: {
+        type: String,
+        default: "",
+      },
     },
     role: {
       type: String,
@@ -121,6 +127,12 @@ const userSchema = new mongoose.Schema(
     toJSON: {
       transform(doc, ret) {
         delete ret.password
+        delete ret.refreshToken
+        delete ret.sessionId
+        delete ret.passwordResetToken
+        delete ret.passwordResetExpires
+        delete ret.emailVerificationToken
+        delete ret.emailVerificationExpires
         delete ret.__v
         return ret
       },
@@ -128,6 +140,12 @@ const userSchema = new mongoose.Schema(
     toObject: {
       transform(doc, ret) {
         delete ret.password
+        delete ret.refreshToken
+        delete ret.sessionId
+        delete ret.passwordResetToken
+        delete ret.passwordResetExpires
+        delete ret.emailVerificationToken
+        delete ret.emailVerificationExpires
         delete ret.__v
         return ret
       },
