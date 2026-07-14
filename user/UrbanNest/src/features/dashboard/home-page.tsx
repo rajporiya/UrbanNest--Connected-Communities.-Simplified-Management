@@ -1,4 +1,3 @@
-import { motion } from "framer-motion"
 import { ArrowRight, Layers3, Sparkles } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
@@ -16,7 +15,7 @@ const technologies = ["React 19", "TypeScript", "Vite", "Tailwind CSS", "shadcn/
 export function HomePage() {
   return (
     <main className="mx-auto flex min-h-svh max-w-6xl items-center px-4 py-12 sm:px-6 lg:px-8">
-      <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="w-full">
+      <div className="w-full">
         <Card className="overflow-hidden rounded-3xl border-border/70 bg-card/85 shadow-2xl shadow-primary/5 backdrop-blur-xl">
           <CardContent className="p-0"><div className="grid lg:grid-cols-[1.2fr_.8fr]">
             <section className="p-7 sm:p-10 lg:p-14"><div className="flex items-center justify-between"><BrandMark /><TooltipProvider><Tooltip><TooltipTrigger render={<span><ThemeToggle /></span>} /><TooltipContent>Switch color theme</TooltipContent></Tooltip></TooltipProvider></div>
@@ -26,7 +25,7 @@ export function HomePage() {
             <aside className="border-t bg-muted/35 p-7 sm:p-10 lg:border-l lg:border-t-0 lg:p-12"><div className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary"><Layers3 className="size-5" /></div><div><p className="font-semibold">Production stack</p><p className="text-sm text-muted-foreground">Configured and type-safe</p></div></div><Separator className="my-6" /><div className="flex flex-wrap gap-2">{technologies.map((technology) => <Badge key={technology} variant="outline" className="bg-background/70">{technology}</Badge>)}</div><p className="mt-8 text-sm leading-6 text-muted-foreground">Routing, persisted UI preferences, guarded roles, API interceptors, responsive layouts, semantic tokens, and global feedback are ready.</p></aside>
           </div></CardContent>
         </Card>
-      </motion.div>
+      </div>
     </main>
   )
 }

@@ -36,7 +36,7 @@ export function ComplaintDetailsPage() {
     (state: State) => state.complaints
   )
   const user = useSelector((state: State) => state.auth.user)
-  const [assigneeId, setAssigneeId] = useState(complaintAssignees[0].id)
+  const [assigneeId, setAssigneeId] = useState<string>(complaintAssignees[0].id)
   const [status, setStatus] = useState<ComplaintStatus>("in-progress")
   const [note, setNote] = useState("")
   useEffect(() => {
