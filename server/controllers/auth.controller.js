@@ -6,12 +6,13 @@ import { hashPassword } from "../utils/password.util.js"
 import sendResponse from "../utils/response.js"
 import { successResponse } from "../utils/response.util.js"
 import {
+      forgotPasswordUser,
   findUserByEmail,
   findUserById,
   getLoggedInUserProfile,
   loginUser,
 } from "../services/user.service.js"
-  forgotPasswordUser,
+
 
 export const register = asyncHandler(async (req, res) => {
   const {

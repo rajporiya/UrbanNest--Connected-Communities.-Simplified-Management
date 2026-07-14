@@ -200,6 +200,94 @@ async function forgotPasswordUser(email) {
   }
 }
 
+async function resetPasswordUser(resetToken, newPassword) {
+  if (!resetToken) {
+    throw new ApiError(400, "Reset token is required.")
+  }
+
+  const hashedResetToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+  const user = await User.findOne({
+    passwordResetToken: hashedResetToken,
+    passwordResetExpires: { $gt: new Date() },
+  })
+
+  if (!user) {
+    throw new ApiError(400, "Invalid or expired reset token.")
+  }
+
+  const hashedPassword = await hashPassword(newPassword)
+
+  const updatedUser = await User.findByIdAndUpdate(
+    user._id,
+    {
+      $set: {
+        password: hashedPassword,
+      },
+      $unset: {
+        passwordResetToken: "",
+        passwordResetExpires: "",
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
+
+  if (!updatedUser) {
+    throw new ApiError(500, "Password reset failed.")
+  }
+
+  return {
+    message: "Password reset successfully.",
+  }
+}
+
+async function changePasswordUser(userId, currentPassword, newPassword) {
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized access.")
+  }
+
+  const user = await findUserById(userId, { includePassword: true })
+
+  if (!user) {
+    throw new ApiError(404, "User not found.")
+  }
+
+  if (!user.isActive) {
+    throw new ApiError(403, "Account is inactive.")
+  }
+
+  const isCurrentPasswordValid = await comparePassword(currentPassword, user.password)
+
+  if (!isCurrentPasswordValid) {
+    throw new ApiError(401, "Current password is incorrect.")
+  }
+
+  const hashedPassword = await hashPassword(newPassword)
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: {
+        password: hashedPassword,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
+
+  if (!updatedUser) {
+    throw new ApiError(500, "Password change failed.")
+  }
+
+  return {
+    message: "Password changed successfully.",
+  }
+}
+
 export {
   createUser,
   deactivateUser,
@@ -208,6 +296,8 @@ export {
   forgotPasswordUser,
   getLoggedInUserProfile,
   loginUser,
+  resetPasswordUser,
+  changePasswordUser,
   registerUser,
   updateUser,
 }
