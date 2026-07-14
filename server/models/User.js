@@ -1,7 +1,13 @@
 import mongoose from "mongoose"
 
-import { USER_ROLE_OPTIONS } from "../config/auth.js"
 import { hashPassword } from "../utils/password.js"
+
+const USER_ROLE_OPTIONS = [
+  "Committee Head",
+  "Committee Member",
+  "Resident",
+  "Security Guard",
+]
 
 const userSchema = new mongoose.Schema(
   {
@@ -30,7 +36,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Phone number is required"],
       unique: true,
-      sparse: true,
+      index: true,
       trim: true,
       match: [/^[0-9+()\-\s]{7,20}$/, "Please provide a valid phone number"],
     },
@@ -47,7 +53,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: USER_ROLE_OPTIONS,
-      default: USER_ROLE_OPTIONS[2],
+      default: "Resident",
       index: true,
     },
     isActive: {
