@@ -47,8 +47,14 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     profileImage: {
-      type: String,
-      default: "",
+      public_id: {
+        type: String,
+        default: null,
+      },
+      secure_url: {
+        type: String,
+        default: "",
+      },
     },
     role: {
       type: String,
@@ -56,6 +62,9 @@ const userSchema = new mongoose.Schema(
       default: "Resident",
       index: true,
     },
+    tower: { type: String, trim: true, maxlength: 20, default: "", index: true },
+    floor: { type: String, trim: true, maxlength: 20, default: "", index: true },
+    flat: { type: String, trim: true, maxlength: 20, default: "", index: true },
     isActive: {
       type: Boolean,
       default: true,
@@ -64,6 +73,26 @@ const userSchema = new mongoose.Schema(
     isEmailVerified: {
       type: Boolean,
       default: false,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    emailVerificationToken: {
+      type: String,
+      default: null,
+      select: false,
+      index: true,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      default: null,
+      select: false,
     },
     passwordResetToken: {
       type: String,
@@ -76,12 +105,46 @@ const userSchema = new mongoose.Schema(
       default: null,
       select: false,
     },
+    refreshToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    sessionId: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    lastLoginAt: {
+      type: Date,
+      default: null,
+    },
+    lastLogoutAt: {
+      type: Date,
+      default: null,
+    },
+    lastLoginIP: {
+      type: String,
+      default: null,
+      maxlength: 64,
+    },
+    lastUserAgent: {
+      type: String,
+      default: null,
+      maxlength: 512,
+    },
   },
   {
     timestamps: true,
     toJSON: {
       transform(doc, ret) {
         delete ret.password
+        delete ret.refreshToken
+        delete ret.sessionId
+        delete ret.passwordResetToken
+        delete ret.passwordResetExpires
+        delete ret.emailVerificationToken
+        delete ret.emailVerificationExpires
         delete ret.__v
         return ret
       },
@@ -89,6 +152,12 @@ const userSchema = new mongoose.Schema(
     toObject: {
       transform(doc, ret) {
         delete ret.password
+        delete ret.refreshToken
+        delete ret.sessionId
+        delete ret.passwordResetToken
+        delete ret.passwordResetExpires
+        delete ret.emailVerificationToken
+        delete ret.emailVerificationExpires
         delete ret.__v
         return ret
       },

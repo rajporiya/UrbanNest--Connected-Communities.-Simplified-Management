@@ -1,5 +1,6 @@
-import sendResponse from "../utils/response.js"
 import { verifyAccessToken } from "../utils/jwt.util.js"
+import { errorResponse } from "../utils/response.util.js"
+import { validateActiveSession } from "../services/user.service.js"
 
 function getBearerToken(authorizationHeader) {
   if (!authorizationHeader || typeof authorizationHeader !== "string") {
@@ -40,14 +41,21 @@ async function authMiddleware(req, res, next) {
     const token = getBearerToken(req.headers.authorization)
 
     if (!token) {
-      return sendResponse(res, 401, "Missing token")
+      return errorResponse(res, "Missing token", [], 401)
     }
 
     const decodedToken = await verifyAccessToken(token)
     const authenticatedUser = normalizeUserPayload(decodedToken)
 
     if (!authenticatedUser) {
-      return sendResponse(res, 403, "Unauthorized access")
+      return errorResponse(res, "Unauthorized access", [], 403)
+    }
+
+    const userId = authenticatedUser.userId || authenticatedUser.sub
+    const isActiveSession = await validateActiveSession(userId, authenticatedUser.sessionId)
+
+    if (!isActiveSession) {
+      return errorResponse(res, "Session is invalid or has ended", [], 401)
     }
 
     req.user = authenticatedUser
@@ -56,7 +64,7 @@ async function authMiddleware(req, res, next) {
     const message = getUnauthorizedMessage(error)
     const statusCode = message === "Unauthorized access" ? 403 : 401
 
-    return sendResponse(res, statusCode, message)
+    return errorResponse(res, message, [], statusCode)
   }
 }
 
