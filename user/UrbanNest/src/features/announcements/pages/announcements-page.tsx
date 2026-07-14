@@ -47,7 +47,7 @@ export function AnnouncementsPage() {
     { id: "title", header: "Announcement", cell: (item) => <div className="min-w-56"><div className="flex items-center gap-2"><p className="max-w-72 truncate font-semibold">{item.title}</p>{item.pinned ? <Pin aria-label="Pinned" className="size-3.5 shrink-0 text-primary" /> : null}</div><p className="mt-1 max-w-80 truncate text-xs text-muted-foreground">{item.summary}</p></div> },
     { id: "category", header: "Category", cell: (item) => <Badge variant="outline" className="capitalize">{item.category}</Badge> },
     { id: "audience", header: "Audience", cell: (item) => <span className="capitalize">{item.audience}</span>, hideOnMobile: true },
-    { id: "author", header: "Author", cell: (item) => <UserIdentity name={item.author.name} subtitle={item.author.role} size="sm" />, hideOnMobile: true },
+    { id: "author", header: "Author", cell: (item) => <UserIdentity name={item.author.name} primaryText={item.author.role} avatarSize="sm" />, hideOnMobile: true },
     { id: "published", header: "Published", cell: (item) => date(item.publishedAt), hideOnMobile: true },
     { id: "status", header: "Status", cell: (item) => <AnnouncementStatusBadge status={item.status} /> },
     { id: "actions", header: "Actions", headerClassName: "text-right", className: "text-right", cell: (item) => <div className="flex justify-end gap-1"><Button variant="ghost" size="icon-xs" aria-label={`View ${item.title}`} render={<Link to={`${ROUTES.ANNOUNCEMENTS}/${item.id}`} />}><Eye /></Button><AnnouncementActions announcement={item} compact onDeleted={() => void reload()} /></div> },

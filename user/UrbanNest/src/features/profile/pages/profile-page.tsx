@@ -30,7 +30,8 @@ export function ProfilePage() {
     if (user && state.data?.id !== user.id) void dispatch(fetchProfile(user))
   }, [dispatch, state.data?.id, user])
   if (!user) return null
-  if (state.loading && !state.data)
+  const profile = state.data?.id === user.id ? state.data : null
+  if (!profile && !state.error)
     return <LoadingState label="Loading profile..." className="py-20" />
   const save = async (values: UpdateProfileRequest) => {
     try {
@@ -63,7 +64,6 @@ export function ProfilePage() {
       toast.error("Security preference could not be updated")
     }
   }
-  const profile = state.data
   return (
     <div className="space-y-6">
       <PageHeader
@@ -88,7 +88,7 @@ export function ProfilePage() {
               primaryText={profile.email}
               secondaryText={`Member since ${new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(new Date(profile.joinedAt))}`}
               badge={<RoleBadge role={profile.role} />}
-            avatarSize="lg"
+              avatarSize="lg"
             />
           </ContentCard>
           <ContentCard
