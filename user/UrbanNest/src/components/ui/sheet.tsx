@@ -66,7 +66,7 @@ export function SheetContent({ className, side = "right", children, ...props }: 
     }
   }, [onOpenChange, open])
 
-  if (!open || typeof document === "undefined") {
+  if (!context || !open || typeof document === "undefined") {
     return null
   }
 
