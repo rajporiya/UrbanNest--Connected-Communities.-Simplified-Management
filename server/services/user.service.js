@@ -1,6 +1,6 @@
 import User from "../models/User.js"
 import ApiError from "../utils/ApiError.js"
-import { sendResetPasswordEmail } from "./email.service.js"
+import { sendResetPasswordEmail, sendVerificationEmail } from "./email.service.js"
 import { generateAccessToken } from "../utils/jwt.util.js"
 import { comparePassword, hashPassword } from "../utils/password.util.js"
 import crypto from "crypto"
@@ -200,6 +200,84 @@ async function forgotPasswordUser(email) {
   }
 }
 
+async function generateEmailVerificationToken(userId) {
+  const user = await findUserById(userId)
+
+  if (!user) {
+    throw new ApiError(404, "User not found.")
+  }
+
+  if (user.isEmailVerified) {
+    throw new ApiError(409, "Email address is already verified.")
+  }
+
+  const verificationToken = crypto.randomBytes(32).toString("hex")
+  const emailVerificationToken = crypto
+    .createHash("sha256")
+    .update(verificationToken)
+    .digest("hex")
+  const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+  await User.findByIdAndUpdate(user._id, {
+    $set: { emailVerificationToken, emailVerificationExpires },
+  })
+
+  return { user, verificationToken }
+}
+
+async function sendUserVerificationEmail(userId) {
+  const { user, verificationToken } = await generateEmailVerificationToken(userId)
+  const apiUrl = process.env.API_URL || `http://localhost:${process.env.PORT || 5000}/api`
+  const verificationUrl = `${apiUrl}/auth/verify-email?token=${encodeURIComponent(verificationToken)}`
+
+  await sendVerificationEmail({
+    to: user.email,
+    firstName: user.firstName,
+    verificationUrl,
+    expiresInHours: 24,
+  })
+}
+
+async function verifyUserEmail(verificationToken) {
+  if (!verificationToken || typeof verificationToken !== "string") {
+    throw new ApiError(400, "Verification token is required.")
+  }
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(verificationToken)
+    .digest("hex")
+  const user = await User.findOne({ emailVerificationToken: hashedToken })
+    .select("+emailVerificationToken +emailVerificationExpires")
+
+  if (!user) {
+    throw new ApiError(400, "Invalid verification token.")
+  }
+
+  if (!user.emailVerificationExpires || user.emailVerificationExpires <= new Date()) {
+    throw new ApiError(400, "Verification token has expired.")
+  }
+
+  const verifiedUser = await User.findOneAndUpdate(
+    {
+      _id: user._id,
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: new Date() },
+    },
+    {
+      $set: { isEmailVerified: true },
+      $unset: { emailVerificationToken: "", emailVerificationExpires: "" },
+    },
+    { new: true, runValidators: true }
+  )
+
+  if (!verifiedUser) {
+    throw new ApiError(400, "Verification token is invalid or has expired.")
+  }
+
+  return { message: "Email verified successfully." }
+}
+
 async function resetPasswordUser(resetToken, newPassword) {
   if (!resetToken) {
     throw new ApiError(400, "Reset token is required.")
@@ -312,10 +390,13 @@ export {
   findUserByEmail,
   findUserById,
   forgotPasswordUser,
+  generateEmailVerificationToken,
   getLoggedInUserProfile,
   loginUser,
   resetPasswordUser,
   changePasswordUser,
   registerUser,
+  sendUserVerificationEmail,
   updateUser,
+  verifyUserEmail,
 }

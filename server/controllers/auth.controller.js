@@ -12,6 +12,8 @@ import {
   getLoggedInUserProfile,
   loginUser,
   resetPasswordUser,
+  sendUserVerificationEmail,
+  verifyUserEmail,
 } from "../services/user.service.js"
 
 
@@ -62,6 +64,8 @@ export const register = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Registration failed.")
   }
 
+  await sendUserVerificationEmail(registeredUser._id)
+
   return successResponse(
     res,
     "Registration completed successfully.",
@@ -102,6 +106,12 @@ export const changePassword = asyncHandler(async (req, res) => {
     req.body.currentPassword,
     req.body.newPassword
   )
+
+  return successResponse(res, result.message, null, 200)
+})
+
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const result = await verifyUserEmail(req.query.token)
 
   return successResponse(res, result.message, null, 200)
 })

@@ -7,6 +7,7 @@ import {
   profile,
   register,
   resetPassword,
+  verifyEmail,
 } from "../controllers/auth.controller.js"
 import authMiddleware from "../middleware/auth.middleware.js"
 import {
@@ -20,6 +21,10 @@ import {
   resetPasswordValidation,
   validationResultMiddleware as resetPasswordValidationResultMiddleware,
 } from "../validators/resetPassword.validator.js"
+import {
+  validationResultMiddleware as verifyEmailValidationResultMiddleware,
+  verifyEmailValidation,
+} from "../validators/verifyEmail.validator.js"
 
 const router = express.Router()
 
@@ -28,6 +33,7 @@ router.post("/login", loginValidation, loginValidationResultMiddleware, login)
 router.get("/profile", authMiddleware, profile)
 router.post("/forgot-password", forgotPasswordValidation, forgotPasswordValidationResultMiddleware, forgotPassword)
 router.post("/reset-password", resetPasswordValidation, resetPasswordValidationResultMiddleware, resetPassword)
+router.get("/verify-email", verifyEmailValidation, verifyEmailValidationResultMiddleware, verifyEmail)
 router.put(
   "/change-password",
   authMiddleware,
