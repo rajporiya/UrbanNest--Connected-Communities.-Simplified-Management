@@ -6,6 +6,7 @@ import { hashPassword } from "../utils/password.util.js"
 import sendResponse from "../utils/response.js"
 import { successResponse } from "../utils/response.util.js"
 import {
+  forgotPasswordUser,
   findUserByEmail,
   findUserById,
   getLoggedInUserProfile,
@@ -73,9 +74,11 @@ export const login = asyncHandler(async (req, res) => {
   return successResponse(res, "Login successful.", loginResult)
 })
 
-function forgotPassword(req, res) {
-  return sendResponse(res, 200, "Forgot password route placeholder")
-}
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const result = await forgotPasswordUser(req.body.email)
+
+  return successResponse(res, result.message, null, 200)
+})
 
 function resetPassword(req, res) {
   return sendResponse(res, 200, "Reset password route placeholder")
@@ -92,4 +95,4 @@ function changePassword(req, res) {
   return sendResponse(res, 200, "Change password route placeholder")
 }
 
-export { changePassword, forgotPassword, resetPassword }
+export { changePassword, resetPassword }

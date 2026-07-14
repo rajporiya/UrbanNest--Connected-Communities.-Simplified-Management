@@ -1,7 +1,9 @@
 import User from "../models/User.js"
 import ApiError from "../utils/ApiError.js"
+import { sendResetPasswordEmail } from "./email.service.js"
 import { generateAccessToken } from "../utils/jwt.util.js"
 import { comparePassword, hashPassword } from "../utils/password.util.js"
+import crypto from "crypto"
 
 import { DEFAULT_ROLE } from "../config/roles.js"
 
@@ -164,11 +166,46 @@ async function getLoggedInUserProfile(userId) {
   }
 }
 
+async function forgotPasswordUser(email) {
+  const normalizedEmail = email?.trim().toLowerCase()
+  const user = await findUserByEmail(normalizedEmail)
+
+  if (!user) {
+    return {
+      message: "If an account exists, a password reset link has been sent.",
+    }
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex")
+  const passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+  const passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000)
+
+  await updateUser(user._id, {
+    passwordResetToken,
+    passwordResetExpires,
+  })
+
+  const clientUrl = process.env.CLIENT_URL || "http://localhost:5173"
+  const resetUrl = `${clientUrl}/reset-password?token=${resetToken}`
+
+  await sendResetPasswordEmail({
+    to: user.email,
+    firstName: user.firstName,
+    resetUrl,
+    expiresInMinutes: 15,
+  })
+
+  return {
+    message: "If an account exists, a password reset link has been sent.",
+  }
+}
+
 export {
   createUser,
   deactivateUser,
   findUserByEmail,
   findUserById,
+  forgotPasswordUser,
   getLoggedInUserProfile,
   loginUser,
   registerUser,
