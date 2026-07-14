@@ -1,7 +1,7 @@
 import crypto from "crypto"
 
 import ROLES from "../config/roles.js"
-import User from "../models/User.js"
+import User from "../models/User.model.js"
 import ApiError from "../utils/ApiError.js"
 import { hashPassword } from "../utils/password.util.js"
 import { sendAccountCredentialsEmail } from "./email.service.js"

@@ -1,4 +1,4 @@
-import User from "../models/User.js"
+import User from "../models/User.model.js"
 import ROLES, { DEFAULT_ROLE } from "../config/roles.js"
 import ApiError from "../utils/ApiError.js"
 import { asyncHandler } from "../utils/asyncHandler.js"

@@ -1,4 +1,4 @@
-import User from "../models/User.js"
+import User from "../models/User.model.js"
 import ApiError from "../utils/ApiError.js"
 import { sendResetPasswordEmail, sendVerificationEmail } from "./email.service.js"
 import {
