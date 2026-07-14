@@ -1,6 +1,7 @@
 import User from "../models/User.js"
 import ApiError from "../utils/ApiError.js"
-import { hashPassword } from "../utils/password.util.js"
+import { generateAccessToken } from "../utils/jwt.util.js"
+import { comparePassword, hashPassword } from "../utils/password.util.js"
 
 import { DEFAULT_ROLE } from "../config/roles.js"
 
@@ -101,4 +102,39 @@ async function registerUser(userData) {
   return createdUser
 }
 
-export { createUser, deactivateUser, findUserByEmail, findUserById, registerUser, updateUser }
+async function loginUser(loginData) {
+  const { email, password } = loginData
+
+  const normalizedEmail = email?.trim().toLowerCase()
+  const user = await findUserByEmail(normalizedEmail, { includePassword: true })
+
+  if (!user) {
+    throw new ApiError(401, "Invalid credentials.")
+  }
+
+  if (!user.isActive) {
+    throw new ApiError(403, "Account is inactive.")
+  }
+
+  const isPasswordValid = await comparePassword(password, user.password)
+
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid credentials.")
+  }
+
+  const accessToken = await generateAccessToken({
+    userId: user._id,
+    email: user.email,
+    role: user.role,
+  })
+
+  const sanitizedUser = user.toObject ? user.toObject() : { ...user }
+  delete sanitizedUser.password
+
+  return {
+    accessToken,
+    user: sanitizedUser,
+  }
+}
+
+export { createUser, deactivateUser, findUserByEmail, findUserById, loginUser, registerUser, updateUser }
