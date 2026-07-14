@@ -6,6 +6,8 @@ import { applicationReducer } from "@/features/dashboard/application.slice"
 import { authReducer } from "@/features/auth/store/auth.slice"
 import { dashboardReducer } from "@/features/dashboard/store/dashboard.slice"
 import { residentsReducer } from "@/features/residents/store/residents.slice"
+import { committeeMembersReducer } from "@/features/committee-members/store/committee-members.slice"
+import { securityGuardsReducer } from "@/features/security-guards/store/security-guards.slice"
 
 const persistedApplicationReducer = persistReducer(
   {
@@ -17,5 +19,5 @@ const persistedApplicationReducer = persistReducer(
   applicationReducer
 )
 
-export const rootReducer = combineReducers({ application: persistedApplicationReducer, auth: authReducer, dashboard: dashboardReducer, residents: residentsReducer })
+export const rootReducer = combineReducers({ application: persistedApplicationReducer, auth: authReducer, dashboard: dashboardReducer, residents: residentsReducer, committeeMembers: committeeMembersReducer, securityGuards: securityGuardsReducer })
 export type RootState = ReturnType<typeof rootReducer>

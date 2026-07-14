@@ -25,6 +25,14 @@ const ResidentsPage = lazy(() => import("@/features/residents/pages/residents-pa
 const ResidentDetailsPage = lazy(() => import("@/features/residents/pages/resident-details-page").then((module) => ({ default: module.ResidentDetailsPage })))
 const AddResidentPage = lazy(() => import("@/features/residents/pages/add-resident-page").then((module) => ({ default: module.AddResidentPage })))
 const EditResidentPage = lazy(() => import("@/features/residents/pages/edit-resident-page").then((module) => ({ default: module.EditResidentPage })))
+const SecurityGuardsPage = lazy(() => import("@/features/security-guards/pages/security-guards-page").then((module) => ({ default: module.SecurityGuardsPage })))
+const SecurityGuardDetailsPage = lazy(() => import("@/features/security-guards/pages/security-guard-details-page").then((module) => ({ default: module.SecurityGuardDetailsPage })))
+const AddSecurityGuardPage = lazy(() => import("@/features/security-guards/pages/add-security-guard-page").then((module) => ({ default: module.AddSecurityGuardPage })))
+const EditSecurityGuardPage = lazy(() => import("@/features/security-guards/pages/edit-security-guard-page").then((module) => ({ default: module.EditSecurityGuardPage })))
+const CommitteeMembersPage = lazy(() => import("@/features/committee-members/pages/committee-members-page").then((module) => ({ default: module.CommitteeMembersPage })))
+const CommitteeMemberDetailsPage = lazy(() => import("@/features/committee-members/pages/committee-member-details-page").then((module) => ({ default: module.CommitteeMemberDetailsPage })))
+const AddCommitteeMemberPage = lazy(() => import("@/features/committee-members/pages/add-committee-member-page").then((module) => ({ default: module.AddCommitteeMemberPage })))
+const EditCommitteeMemberPage = lazy(() => import("@/features/committee-members/pages/edit-committee-member-page").then((module) => ({ default: module.EditCommitteeMemberPage })))
 
 function ModulePlaceholder({ title }: { title: string }) {
   return (
@@ -66,8 +74,14 @@ export function AppRouter() {
               <Route element={<RoleRoute allowedRoles={HEAD_ONLY} />}>
                 <Route path={ROUTES.RESIDENT_NEW} element={<AddResidentPage />} />
                 <Route path={ROUTES.RESIDENT_EDIT} element={<EditResidentPage />} />
-                <Route path={ROUTES.COMMITTEE_MEMBERS} element={<ModulePlaceholder title="Committee Members" />} />
-                <Route path={ROUTES.SECURITY_GUARDS} element={<ModulePlaceholder title="Security Guards" />} />
+                <Route path={ROUTES.COMMITTEE_MEMBERS} element={<CommitteeMembersPage />} />
+                <Route path={ROUTES.COMMITTEE_MEMBER_NEW} element={<AddCommitteeMemberPage />} />
+                <Route path={ROUTES.COMMITTEE_MEMBER_DETAILS} element={<CommitteeMemberDetailsPage />} />
+                <Route path={ROUTES.COMMITTEE_MEMBER_EDIT} element={<EditCommitteeMemberPage />} />
+                <Route path={ROUTES.SECURITY_GUARDS} element={<SecurityGuardsPage />} />
+                <Route path={ROUTES.SECURITY_GUARD_NEW} element={<AddSecurityGuardPage />} />
+                <Route path={ROUTES.SECURITY_GUARD_DETAILS} element={<SecurityGuardDetailsPage />} />
+                <Route path={ROUTES.SECURITY_GUARD_EDIT} element={<EditSecurityGuardPage />} />
               </Route>
               <Route element={<RoleRoute allowedRoles={COMPLAINT_ROLES} />}>
                 <Route path={ROUTES.COMPLAINTS} element={<ModulePlaceholder title="Complaints" />} />
