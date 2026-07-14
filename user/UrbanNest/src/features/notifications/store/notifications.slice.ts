@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice, isAnyOf } from "@reduxjs/toolkit"
 
 import { notificationService } from "@/features/notifications/services/notification.service"
 import type { AppNotification, NotificationListQuery, NotificationListResponse } from "@/features/notifications/types/notification.types"
@@ -30,8 +30,8 @@ const slice = createSlice({
       .addCase(markNotificationRead.fulfilled, (state, action) => { state.mutationLoading = false; const index = state.items.findIndex((item) => item.id === action.payload.id); if (index >= 0 && !state.items[index].read) { state.items[index] = action.payload; state.unreadCount = Math.max(0, state.unreadCount - 1) } })
       .addCase(markAllNotificationsRead.fulfilled, (state) => { state.mutationLoading = false; state.items.forEach((item) => { item.read = true }); state.unreadCount = 0 })
       .addCase(deleteNotification.fulfilled, (state, action) => { state.mutationLoading = false; const item = state.items.find((entry) => entry.id === action.payload); if (item && !item.read) state.unreadCount = Math.max(0, state.unreadCount - 1); state.items = state.items.filter((entry) => entry.id !== action.payload); state.pagination.total = Math.max(0, state.pagination.total - 1) })
-      .addMatcher((action) => [markNotificationRead.pending.type, markAllNotificationsRead.pending.type, deleteNotification.pending.type].includes(action.type), (state) => { state.mutationLoading = true; state.error = null })
-      .addMatcher((action) => [markNotificationRead.rejected.type, markAllNotificationsRead.rejected.type, deleteNotification.rejected.type].includes(action.type), (state, action) => { state.mutationLoading = false; state.error = (action.payload as string | undefined) ?? "Notification action failed." })
+      .addMatcher(isAnyOf(markNotificationRead.pending, markAllNotificationsRead.pending, deleteNotification.pending), (state) => { state.mutationLoading = true; state.error = null })
+      .addMatcher(isAnyOf(markNotificationRead.rejected, markAllNotificationsRead.rejected, deleteNotification.rejected), (state, action) => { state.mutationLoading = false; state.error = action.payload ?? "Notification action failed." })
   },
 })
 export const { clearNotificationError } = slice.actions

@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice, isAnyOf } from "@reduxjs/toolkit"
 import { eventService } from "@/features/events/services/event.service"
 import type { CommunityEvent, EventInput, EventListQuery, EventListResponse, RsvpResponse, UpdateEventInput } from "@/features/events/types/event.types"
 
@@ -16,9 +16,9 @@ const slice = createSlice({ name: "events", initialState, reducers: { clearSelec
   builder.addCase(fetchEvents.pending, (state) => { state.listLoading = true; state.error = null }).addCase(fetchEvents.fulfilled, (state, action) => { state.listLoading = false; state.items = action.payload.items; state.pagination = { page: action.payload.page, limit: action.payload.limit, total: action.payload.total, totalPages: action.payload.totalPages } }).addCase(fetchEvents.rejected, (state, action) => { state.listLoading = false; state.error = action.payload ?? "Events could not be loaded." })
     .addCase(fetchEvent.pending, (state) => { state.detailsLoading = true; state.error = null; state.selected = null }).addCase(fetchEvent.fulfilled, (state, action) => { state.detailsLoading = false; state.selected = action.payload }).addCase(fetchEvent.rejected, (state, action) => { state.detailsLoading = false; state.error = action.payload ?? "Event could not be loaded." })
     .addCase(deleteEvent.fulfilled, (state, action) => { state.mutationLoading = false; state.items = state.items.filter((item) => item.id !== action.payload); if (state.selected?.id === action.payload) state.selected = null })
-    .addMatcher((action) => [createEvent.pending.type, updateEvent.pending.type, deleteEvent.pending.type, submitEventRsvp.pending.type].includes(action.type), (state) => { state.mutationLoading = true; state.error = null })
-    .addMatcher((action): action is { type: string; payload: CommunityEvent } => [createEvent.fulfilled.type, updateEvent.fulfilled.type, submitEventRsvp.fulfilled.type].includes(action.type), (state, action) => { state.mutationLoading = false; const index = state.items.findIndex((item) => item.id === action.payload.id); if (index >= 0) state.items[index] = action.payload; else state.items.unshift(action.payload); if (state.selected?.id === action.payload.id || action.type === createEvent.fulfilled.type) state.selected = action.payload })
-    .addMatcher((action) => [createEvent.rejected.type, updateEvent.rejected.type, deleteEvent.rejected.type, submitEventRsvp.rejected.type].includes(action.type), (state, action) => { state.mutationLoading = false; state.error = (action.payload as string | undefined) ?? "Event action failed." })
+    .addMatcher(isAnyOf(createEvent.pending, updateEvent.pending, deleteEvent.pending, submitEventRsvp.pending), (state) => { state.mutationLoading = true; state.error = null })
+    .addMatcher(isAnyOf(createEvent.fulfilled, updateEvent.fulfilled, submitEventRsvp.fulfilled), (state, action) => { state.mutationLoading = false; const index = state.items.findIndex((item) => item.id === action.payload.id); if (index >= 0) state.items[index] = action.payload; else state.items.unshift(action.payload); if (state.selected?.id === action.payload.id || action.type === createEvent.fulfilled.type) state.selected = action.payload })
+    .addMatcher(isAnyOf(createEvent.rejected, updateEvent.rejected, deleteEvent.rejected, submitEventRsvp.rejected), (state, action) => { state.mutationLoading = false; state.error = action.payload ?? "Event action failed." })
 } })
 export const { clearSelectedEvent, clearEventError } = slice.actions
 export const eventsReducer = slice.reducer

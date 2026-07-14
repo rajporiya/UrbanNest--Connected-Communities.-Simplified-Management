@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice, isAnyOf, type PayloadAction } from "@reduxjs/toolkit"
 
 import { announcementService } from "@/features/announcements/services/announcement.service"
 import type { Announcement, AnnouncementInput, AnnouncementListQuery, AnnouncementListResponse, UpdateAnnouncementInput } from "@/features/announcements/types/announcement.types"
@@ -59,14 +59,14 @@ const slice = createSlice({
       .addCase(fetchAnnouncement.fulfilled, (state, action) => { state.detailsLoading = false; state.selected = action.payload })
       .addCase(fetchAnnouncement.rejected, (state, action) => { state.detailsLoading = false; state.error = action.payload ?? "Announcement could not be loaded." })
       .addCase(deleteAnnouncement.fulfilled, (state, action) => { state.mutationLoading = false; state.items = state.items.filter((item) => item.id !== action.payload); if (state.selected?.id === action.payload) state.selected = null })
-      .addMatcher((action) => [createAnnouncement.pending.type, updateAnnouncement.pending.type, deleteAnnouncement.pending.type, toggleAnnouncementPin.pending.type].includes(action.type), (state) => { state.mutationLoading = true; state.error = null })
-      .addMatcher((action): action is PayloadAction<Announcement> => [createAnnouncement.fulfilled.type, updateAnnouncement.fulfilled.type, toggleAnnouncementPin.fulfilled.type].includes(action.type), (state, action) => {
+      .addMatcher(isAnyOf(createAnnouncement.pending, updateAnnouncement.pending, deleteAnnouncement.pending, toggleAnnouncementPin.pending), (state) => { state.mutationLoading = true; state.error = null })
+      .addMatcher(isAnyOf(createAnnouncement.fulfilled, updateAnnouncement.fulfilled, toggleAnnouncementPin.fulfilled), (state, action) => {
         state.mutationLoading = false
         const index = state.items.findIndex((item) => item.id === action.payload.id)
         if (index >= 0) state.items[index] = action.payload; else state.items.unshift(action.payload)
         if (state.selected?.id === action.payload.id || action.type === createAnnouncement.fulfilled.type) state.selected = action.payload
       })
-      .addMatcher((action) => [createAnnouncement.rejected.type, updateAnnouncement.rejected.type, deleteAnnouncement.rejected.type, toggleAnnouncementPin.rejected.type].includes(action.type), (state, action) => { state.mutationLoading = false; state.error = (action.payload as string | undefined) ?? "The action could not be completed." })
+      .addMatcher(isAnyOf(createAnnouncement.rejected, updateAnnouncement.rejected, deleteAnnouncement.rejected, toggleAnnouncementPin.rejected), (state, action) => { state.mutationLoading = false; state.error = action.payload ?? "The action could not be completed." })
   },
 })
 
