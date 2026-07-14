@@ -1,10 +1,43 @@
-import { LayoutDashboard } from "lucide-react"
-import { Link, Outlet } from "react-router-dom"
-import { BrandMark } from "@/components/common/brand-mark"
-import { ThemeToggle } from "@/components/common/theme-toggle"
-import { Button } from "@/components/ui/button"
-import { ROUTES } from "@/constants/routes.constants"
+import { useState } from "react"
+import { Outlet, useLocation } from "react-router-dom"
+
+import { PageContainer } from "@/components/layout/page-container"
+import { DashboardHeader, DashboardSidebar, MobileNavigation } from "@/components/navigation"
+import { dashboardNavigation, type DashboardNavigationItem } from "@/config/dashboard-navigation.config"
+import { useAppSelector } from "@/hooks/use-app-selector"
+import { cn } from "@/lib/utils"
+
+function findTitle(items: DashboardNavigationItem[], pathname: string): string | undefined {
+  for (const item of items) {
+    if (item.href && (pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`)))) return item.label
+    const childTitle = item.children ? findTitle(item.children, pathname) : undefined
+    if (childTitle) return childTitle
+  }
+}
 
 export function DashboardLayout() {
-  return <div className="min-h-svh bg-background"><header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur-xl"><div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6"><Link to={ROUTES.HOME} className="flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><BrandMark className="size-9 rounded-xl" /><div><p className="text-sm font-semibold">UrbanNest</p><p className="text-xs text-muted-foreground">Management workspace</p></div></Link><div className="flex items-center gap-2"><Button variant="ghost" size="sm" render={<Link to={ROUTES.DASHBOARD} />}><LayoutDashboard />Dashboard</Button><ThemeToggle /></div></div></header><main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"><Outlet /></main></div>
+  const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false)
+  const sidebarCollapsed = useAppSelector((state) => state.application.sidebarCollapsed)
+  const { pathname } = useLocation()
+  const title = findTitle(dashboardNavigation, pathname) ?? "UrbanNest"
+
+  return (
+    <div className="flex h-svh w-full overflow-hidden bg-background text-foreground">
+      <DashboardSidebar />
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col overflow-hidden transition-[max-width] duration-200 motion-reduce:transition-none",
+          sidebarCollapsed ? "lg:max-w-[calc(100vw-5rem)]" : "lg:max-w-[calc(100vw-16rem)]",
+        )}
+      >
+        <DashboardHeader title={title} onOpenMobileMenu={() => setMobileNavigationOpen(true)} />
+        <main id="main-content" className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto" tabIndex={-1}>
+          <PageContainer size="wide">
+            <Outlet />
+          </PageContainer>
+        </main>
+      </div>
+      <MobileNavigation open={mobileNavigationOpen} onOpenChange={setMobileNavigationOpen} />
+    </div>
+  )
 }
