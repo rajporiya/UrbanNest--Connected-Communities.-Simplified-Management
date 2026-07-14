@@ -1,0 +1,13 @@
+import { useEffect } from "react"
+import { ArrowLeft, MapPin } from "lucide-react"
+import { useSelector } from "react-redux"
+import { Link, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import { PageHeader } from "@/components/layout/page-header"
+import { Card, CardContent } from "@/components/ui/card"
+import { ROUTES } from "@/constants/routes.constants"
+import { ParkingAssignmentForm } from "@/features/parking/components/parking-forms"
+import type { ParkingAssignmentFormValues } from "@/features/parking/schemas/parking.schema"
+import { assignParking, fetchParkingSlots, fetchParkingVehicles, type ParkingState } from "@/features/parking/store/parking.slice"
+import { useAppDispatch } from "@/hooks/use-app-dispatch"
+export function AssignParkingPage() { const dispatch = useAppDispatch(); const navigate = useNavigate(); const { slots, vehicles, mutationLoading } = useSelector((state: { parking: ParkingState }) => state.parking); useEffect(() => { void dispatch(fetchParkingSlots({ page: 1, limit: 100 })); void dispatch(fetchParkingVehicles()) }, [dispatch]); const submit = async (values: ParkingAssignmentFormValues) => { const vehicle = vehicles.find((item) => item.id === values.vehicleId); if (!vehicle) return; try { const slot = await dispatch(assignParking({ ...values, residentId: vehicle.residentId, residentName: vehicle.residentName, flatNumber: vehicle.flatNumber })).unwrap(); toast.success("Parking assigned successfully."); navigate(`${ROUTES.PARKING}/${slot.id}`, { replace: true }) } catch (error) { toast.error(typeof error === "string" ? error : "Parking could not be assigned.") } }; return <div className="space-y-6"><PageHeader title="Assign parking" description="Connect a resident vehicle with an available slot." icon={<MapPin />} breadcrumbs={<Link className="inline-flex items-center gap-1" to={ROUTES.PARKING}><ArrowLeft className="size-4" />Parking</Link>} /><Card><CardContent className="pt-6"><ParkingAssignmentForm slots={slots} vehicles={vehicles} loading={mutationLoading} onSubmit={submit} onCancel={() => navigate(-1)} /></CardContent></Card></div> }

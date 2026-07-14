@@ -1,0 +1,25 @@
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+import { eventService } from "@/features/events/services/event.service"
+import type { CommunityEvent, EventInput, EventListQuery, EventListResponse, RsvpResponse, UpdateEventInput } from "@/features/events/types/event.types"
+
+export interface EventsState { items: CommunityEvent[]; selected: CommunityEvent | null; pagination: { page: number; limit: number; total: number; totalPages: number }; listLoading: boolean; detailsLoading: boolean; mutationLoading: boolean; error: string | null }
+const initialState: EventsState = { items: [], selected: null, pagination: { page: 1, limit: 10, total: 0, totalPages: 1 }, listLoading: false, detailsLoading: false, mutationLoading: false, error: null }
+type Config = { rejectValue: string }
+const message = (error: unknown, fallback: string) => error instanceof Error && error.message ? error.message : fallback
+export const fetchEvents = createAsyncThunk<EventListResponse, EventListQuery, Config>("events/list", async (query, api) => { try { return await eventService.list(query) } catch (error) { return api.rejectWithValue(message(error, "Events could not be loaded.")) } })
+export const fetchEvent = createAsyncThunk<CommunityEvent, string, Config>("events/details", async (id, api) => { try { return await eventService.get(id) } catch (error) { return api.rejectWithValue(message(error, "Event could not be loaded.")) } })
+export const createEvent = createAsyncThunk<CommunityEvent, EventInput, Config>("events/create", async (input, api) => { try { return await eventService.create(input) } catch (error) { return api.rejectWithValue(message(error, "Event could not be created.")) } })
+export const updateEvent = createAsyncThunk<CommunityEvent, { id: string; data: UpdateEventInput }, Config>("events/update", async ({ id, data }, api) => { try { return await eventService.update(id, data) } catch (error) { return api.rejectWithValue(message(error, "Event could not be updated.")) } })
+export const deleteEvent = createAsyncThunk<string, string, Config>("events/delete", async (id, api) => { try { return await eventService.remove(id) } catch (error) { return api.rejectWithValue(message(error, "Event could not be deleted.")) } })
+export const submitEventRsvp = createAsyncThunk<CommunityEvent, { id: string; response: RsvpResponse }, Config>("events/rsvp", async ({ id, response }, api) => { try { return await eventService.rsvp(id, response) } catch (error) { return api.rejectWithValue(message(error, "RSVP could not be saved.")) } })
+const slice = createSlice({ name: "events", initialState, reducers: { clearSelectedEvent: (state) => { state.selected = null }, clearEventError: (state) => { state.error = null } }, extraReducers: (builder) => {
+  builder.addCase(fetchEvents.pending, (state) => { state.listLoading = true; state.error = null }).addCase(fetchEvents.fulfilled, (state, action) => { state.listLoading = false; state.items = action.payload.items; state.pagination = { page: action.payload.page, limit: action.payload.limit, total: action.payload.total, totalPages: action.payload.totalPages } }).addCase(fetchEvents.rejected, (state, action) => { state.listLoading = false; state.error = action.payload ?? "Events could not be loaded." })
+    .addCase(fetchEvent.pending, (state) => { state.detailsLoading = true; state.error = null; state.selected = null }).addCase(fetchEvent.fulfilled, (state, action) => { state.detailsLoading = false; state.selected = action.payload }).addCase(fetchEvent.rejected, (state, action) => { state.detailsLoading = false; state.error = action.payload ?? "Event could not be loaded." })
+    .addCase(deleteEvent.fulfilled, (state, action) => { state.mutationLoading = false; state.items = state.items.filter((item) => item.id !== action.payload); if (state.selected?.id === action.payload) state.selected = null })
+    .addMatcher((action) => [createEvent.pending.type, updateEvent.pending.type, deleteEvent.pending.type, submitEventRsvp.pending.type].includes(action.type), (state) => { state.mutationLoading = true; state.error = null })
+    .addMatcher((action): action is { type: string; payload: CommunityEvent } => [createEvent.fulfilled.type, updateEvent.fulfilled.type, submitEventRsvp.fulfilled.type].includes(action.type), (state, action) => { state.mutationLoading = false; const index = state.items.findIndex((item) => item.id === action.payload.id); if (index >= 0) state.items[index] = action.payload; else state.items.unshift(action.payload); if (state.selected?.id === action.payload.id || action.type === createEvent.fulfilled.type) state.selected = action.payload })
+    .addMatcher((action) => [createEvent.rejected.type, updateEvent.rejected.type, deleteEvent.rejected.type, submitEventRsvp.rejected.type].includes(action.type), (state, action) => { state.mutationLoading = false; state.error = (action.payload as string | undefined) ?? "Event action failed." })
+} })
+export const { clearSelectedEvent, clearEventError } = slice.actions
+export const eventsReducer = slice.reducer
+export default slice.reducer

@@ -1,0 +1,13 @@
+import { useEffect } from "react"
+import { ArrowLeft, UserPlus } from "lucide-react"
+import { useSelector } from "react-redux"
+import { Link, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import { PageHeader } from "@/components/layout/page-header"
+import { Card, CardContent } from "@/components/ui/card"
+import { ROUTES } from "@/constants/routes.constants"
+import { GuestParkingForm } from "@/features/parking/components/parking-forms"
+import type { GuestParkingFormValues } from "@/features/parking/schemas/parking.schema"
+import { fetchParkingSlots, registerGuestParking, type ParkingState } from "@/features/parking/store/parking.slice"
+import { useAppDispatch } from "@/hooks/use-app-dispatch"
+export function GuestParkingPage() { const dispatch = useAppDispatch(); const navigate = useNavigate(); const { slots, mutationLoading } = useSelector((state: { parking: ParkingState }) => state.parking); useEffect(() => { void dispatch(fetchParkingSlots({ page: 1, limit: 100 })) }, [dispatch]); const submit = async (values: GuestParkingFormValues) => { try { const slot = await dispatch(registerGuestParking(values)).unwrap(); toast.success("Guest parking reserved."); navigate(`${ROUTES.PARKING}/${slot.id}`, { replace: true }) } catch (error) { toast.error(typeof error === "string" ? error : "Guest parking could not be reserved.") } }; return <div className="space-y-6"><PageHeader title="Guest parking" description="Reserve a time-limited slot for a resident's guest." icon={<UserPlus />} breadcrumbs={<Link className="inline-flex items-center gap-1" to={ROUTES.PARKING}><ArrowLeft className="size-4" />Parking</Link>} /><Card><CardContent className="pt-6"><GuestParkingForm slots={slots} loading={mutationLoading} onSubmit={submit} onCancel={() => navigate(-1)} /></CardContent></Card></div> }

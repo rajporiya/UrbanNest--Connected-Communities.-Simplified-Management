@@ -5,6 +5,7 @@ import { PageContainer } from "@/components/layout/page-container"
 import { DashboardHeader, DashboardSidebar, MobileNavigation } from "@/components/navigation"
 import { dashboardNavigation, type DashboardNavigationItem } from "@/config/dashboard-navigation.config"
 import { useAppSelector } from "@/hooks/use-app-selector"
+import { GlobalSearchCommand } from "@/features/global-search"
 import { cn } from "@/lib/utils"
 
 function findTitle(items: DashboardNavigationItem[], pathname: string): string | undefined {
@@ -38,6 +39,7 @@ export function DashboardLayout() {
         </main>
       </div>
       <MobileNavigation open={mobileNavigationOpen} onOpenChange={setMobileNavigationOpen} />
+      <GlobalSearchCommand />
     </div>
   )
 }

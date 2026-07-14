@@ -1,0 +1,12 @@
+import { useEffect } from "react"
+import { ArrowLeft, Clock3 } from "lucide-react"
+import { useSelector } from "react-redux"
+import { Link } from "react-router-dom"
+import { PageHeader } from "@/components/layout/page-header"
+import { DataTable, type DataTableColumn } from "@/components/table"
+import { ROUTES } from "@/constants/routes.constants"
+import { fetchParkingHistory, type ParkingState } from "@/features/parking/store/parking.slice"
+import type { ParkingAssignment } from "@/features/parking/types/parking.types"
+import { useAppDispatch } from "@/hooks/use-app-dispatch"
+const date = (value: string | null) => value ? new Intl.DateTimeFormat("en-IN", { dateStyle: "medium" }).format(new Date(value)) : "Active"
+export function ParkingHistoryPage() { const dispatch = useAppDispatch(); const { history, auxiliaryLoading } = useSelector((state: { parking: ParkingState }) => state.parking); useEffect(() => { void dispatch(fetchParkingHistory()) }, [dispatch]); const columns: DataTableColumn<ParkingAssignment>[] = [{ id: "slot", header: "Slot", cell: (item) => <span className="font-semibold">{item.slotNumber}</span> }, { id: "person", header: "Resident / guest", cell: (item) => <div><p>{item.residentName}</p><p className="text-xs text-muted-foreground">{item.flatNumber}</p></div> }, { id: "vehicle", header: "Vehicle", cell: (item) => item.vehicleNumber }, { id: "started", header: "Started", cell: (item) => date(item.startsAt), hideOnMobile: true }, { id: "ended", header: "Ended", cell: (item) => date(item.endsAt) }]; return <div className="space-y-6"><PageHeader title="Parking history" description="Audit resident and guest parking allocations." icon={<Clock3 />} breadcrumbs={<Link className="inline-flex items-center gap-1" to={ROUTES.PARKING}><ArrowLeft className="size-4" />Parking</Link>} /><DataTable data={history} columns={columns} getRowId={(item) => item.id} loading={auxiliaryLoading && !history.length} emptyTitle="No parking history" emptyDescription="Completed and active allocations will appear here." /></div> }
