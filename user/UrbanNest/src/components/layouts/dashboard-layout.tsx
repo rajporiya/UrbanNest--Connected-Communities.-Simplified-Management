@@ -9,7 +9,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
+} from "../ui/sheet"
 
 type DashboardLayoutProps = {
   children: ReactNode

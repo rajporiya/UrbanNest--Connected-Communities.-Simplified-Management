@@ -1,10 +1,10 @@
 import { motion } from "framer-motion"
 import { ArrowRight, LayoutGrid, Layers3, Sparkles, SquareDashedBottomCode } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "../components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "../components/ui/separator"
 import { appConfig, sidebarNavigation } from "@/lib/app-config"
 
 const featureCards = [

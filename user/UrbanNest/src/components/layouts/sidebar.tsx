@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "../ui/separator"
 import { appConfig, sidebarNavigation } from "@/lib/app-config"
 import { cn } from "@/lib/utils"
 
