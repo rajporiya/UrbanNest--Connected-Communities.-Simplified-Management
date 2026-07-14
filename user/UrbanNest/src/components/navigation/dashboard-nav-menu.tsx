@@ -67,7 +67,7 @@ export function DashboardNavMenu({ role, collapsed = false, mobile = false, onNa
     if (!collapsed || mobile) return <li key={navItem.id}>{link}</li>
     return (
       <li key={navItem.id}>
-        <Tooltip><TooltipTrigger render={<span className="block" />}>{link}</TooltipTrigger><TooltipContent side="right">{navItem.label}</TooltipContent></Tooltip>
+        <Tooltip><TooltipTrigger render={<span className="block" />}>{link}</TooltipTrigger><TooltipContent>{navItem.label}</TooltipContent></Tooltip>
       </li>
     )
   }

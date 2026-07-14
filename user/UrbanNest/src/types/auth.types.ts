@@ -10,6 +10,7 @@ export type AuthUser = {
 
 export type AuthState = {
   isAuthenticated: boolean
+  isInitializing: boolean
   accessToken: string | null
   user: AuthUser | null
 }

@@ -4,6 +4,7 @@ import type { AuthState, AuthUser } from "@/types/auth.types"
 
 const initialState: AuthState = {
   isAuthenticated: true,
+  isInitializing: false,
   accessToken: null,
   user: {
     id: "mock-committee-head",
@@ -27,6 +28,7 @@ const authSlice = createSlice({
       state.user = null
       state.accessToken = null
       state.isAuthenticated = false
+      state.isInitializing = false
     },
   },
 })

@@ -31,6 +31,7 @@ export function ErrorState({
   compact = false,
   className,
   code,
+  icon: Icon = TriangleAlert,
 }: ErrorStateProps) {
   const [isRetrying, setIsRetrying] = useState(false)
   const displayedCode = errorCode ?? code
@@ -55,7 +56,7 @@ export function ErrorState({
       )}
     >
       <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-destructive/10 text-destructive">
-        <TriangleAlert aria-hidden="true" className="size-6" />
+        <Icon aria-hidden="true" className="size-6" />
       </div>
       <div className="min-w-0 max-w-lg">
         {displayedCode !== undefined ? (
