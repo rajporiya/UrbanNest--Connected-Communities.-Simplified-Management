@@ -1,22 +1,11 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
-import { Provider } from "react-redux"
-import { PersistGate } from "redux-persist/integration/react"
-
-import "./index.css"
+import "@/styles/globals.css"
 import App from "./App.tsx"
-import { ThemeProvider } from "@/components/theme-provider.tsx"
-import { Loading } from "@/components/common/loading"
-import { persistor, store } from "@/redux/store"
+import { AppProvider } from "@/providers/app-provider"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Provider store={store}>
-      <PersistGate loading={<Loading />} persistor={persistor}>
-        <ThemeProvider defaultTheme="system" storageKey="urban-nest-theme">
-          <App />
-        </ThemeProvider>
-      </PersistGate>
-    </Provider>
+    <AppProvider><App /></AppProvider>
   </StrictMode>
 )
