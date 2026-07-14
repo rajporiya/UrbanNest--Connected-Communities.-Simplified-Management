@@ -12,7 +12,6 @@ function getSaltRounds() {
   return DEFAULT_SALT_ROUNDS
 }
 
-// Hash a plain text password using bcrypt with configurable salt rounds.
 export async function hashPassword(password) {
   try {
     if (!password || typeof password !== "string") {
@@ -25,8 +24,7 @@ export async function hashPassword(password) {
     throw new Error(`Failed to hash password: ${error.message}`)
   }
 }
-
-// Compare a plain text password against a hashed password using bcrypt.
+    
 export async function comparePassword(plainPassword, hashedPassword) {
   try {
     if (!plainPassword || typeof plainPassword !== "string") {
