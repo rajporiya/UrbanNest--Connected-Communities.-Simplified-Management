@@ -1,5 +1,5 @@
 import { mockNotifications } from "@/features/notifications/data/notifications.mock"
-import type { AppNotification, NotificationListQuery, NotificationListResponse } from "@/features/notifications/types/notification.types"
+import type { AppNotification, NotificationCategory, NotificationListQuery, NotificationListResponse } from "@/features/notifications/types/notification.types"
 
 let store = structuredClone(mockNotifications)
 const wait = () => new Promise<void>((resolve) => window.setTimeout(resolve, 180))
@@ -25,4 +25,25 @@ export const notificationService = {
   async markRead(id: string): Promise<AppNotification> { await wait(); const index = indexOf(id); store[index] = { ...store[index], read: true }; return clone(store[index]) },
   async markAllRead(): Promise<void> { await wait(); store = store.map((item) => ({ ...item, read: true })) },
   async remove(id: string): Promise<string> { await wait(); store.splice(indexOf(id), 1); return id },
+  async add(
+    title: string,
+    message: string,
+    category: NotificationCategory,
+    actionHref?: string,
+    actionLabel?: string
+  ): Promise<AppNotification> {
+    await wait()
+    const item: AppNotification = {
+      id: `not-${globalThis.crypto.randomUUID()}`,
+      title,
+      message,
+      category,
+      read: false,
+      createdAt: new Date().toISOString(),
+      actionHref,
+      actionLabel,
+    }
+    store = [item, ...store]
+    return clone(item)
+  },
 }

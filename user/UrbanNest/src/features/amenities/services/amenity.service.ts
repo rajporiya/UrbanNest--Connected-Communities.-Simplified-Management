@@ -134,6 +134,16 @@ export const amenityService = {
       createdAt: new Date().toISOString(),
     }
     store.unshift(item)
+
+    const { notificationService } = await import("@/features/notifications/services/notification.service")
+    await notificationService.add(
+      "New booking requested",
+      `${resident.name} requested to book the ${amenity.name} for ${input.bookingDate} (${slot.label}).`,
+      "system",
+      `/amenities`,
+      "View bookings"
+    )
+
     return clone(item)
   },
   async review(
@@ -150,6 +160,16 @@ export const amenityService = {
       status,
       reviewNote: note.trim() || undefined,
     }
+
+    const { notificationService } = await import("@/features/notifications/services/notification.service")
+    await notificationService.add(
+      `Booking ${status}`,
+      `Your booking request for the ${store[index].amenityName} on ${store[index].bookingDate} has been ${status}.`,
+      "system",
+      `/amenities`,
+      "View details"
+    )
+
     return clone(store[index])
   },
 }

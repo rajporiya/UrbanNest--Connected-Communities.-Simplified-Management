@@ -78,6 +78,16 @@ export const visitorService = {
       createdAt: new Date().toISOString(),
     }
     store.unshift(item)
+
+    const { notificationService } = await import("@/features/notifications/services/notification.service")
+    await notificationService.add(
+      "Visitor pass created",
+      `A visitor pass has been generated for ${input.visitorName} scheduled on ${input.visitDate}.`,
+      "visitor",
+      `/visitors`,
+      "View pass"
+    )
+
     return clone(item)
   },
   async verify(code: string): Promise<VisitorPass> {
@@ -102,6 +112,16 @@ export const visitorService = {
       checkedInAt: new Date().toISOString(),
       verifiedBy: guardName,
     }
+
+    const { notificationService } = await import("@/features/notifications/services/notification.service")
+    await notificationService.add(
+      "Visitor checked in",
+      `${store[index].visitorName} has checked in at the main gate for Flat ${store[index].flatNumber}.`,
+      "visitor",
+      `/visitors`,
+      "View details"
+    )
+
     return clone(store[index])
   },
   async checkOut(id: string): Promise<VisitorPass> {

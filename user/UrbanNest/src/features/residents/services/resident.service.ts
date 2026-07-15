@@ -189,6 +189,7 @@ export interface ResidentService {
   unblockResident(id: string): Promise<ResidentDetails>
   promoteResidentRole(id: string): Promise<ResidentDetails>
   demoteResidentRoleByEmail(email: string): Promise<void>
+  removeResident(id: string): Promise<ResidentDetails>
 }
 
 export const residentService: ResidentService = {
@@ -321,6 +322,16 @@ export const residentService: ResidentService = {
     }
 
     residentStore = [resident, ...residentStore]
+
+    const { notificationService } = await import("@/features/notifications/services/notification.service")
+    await notificationService.add(
+      "New resident registration",
+      `${data.fullName} registered for Flat ${flat.number} (${tower.name}) and is pending approval.`,
+      "system",
+      `/residents`,
+      "Review resident"
+    )
+
     return clone(resident)
   },
 
@@ -361,7 +372,20 @@ export const residentService: ResidentService = {
     })
   },
 
-  approveResident: (id) => updateApprovalStatus(id, "pending", "approved"),
+  async approveResident(id) {
+    const res = await updateApprovalStatus(id, "pending", "approved")
+
+    const { notificationService } = await import("@/features/notifications/services/notification.service")
+    await notificationService.add(
+      "Resident approved",
+      `The registration request for ${res.fullName} (Flat ${res.flat.number}) has been approved.`,
+      "system",
+      `/residents`,
+      "View resident"
+    )
+
+    return res
+  },
   rejectResident: (id) => updateApprovalStatus(id, "pending", "rejected"),
   activateResident: (id) => updateAccountStatus(id, ["inactive"], "active"),
   deactivateResident: (id) => updateAccountStatus(id, ["active"], "inactive"),
@@ -394,5 +418,12 @@ export const residentService: ResidentService = {
         updatedAt: new Date().toISOString(),
       }
     }
+  },
+  async removeResident(id) {
+    await waitForMockResponse()
+    const index = getResidentIndex(id)
+    const resident = residentStore[index]
+    residentStore.splice(index, 1)
+    return clone(resident)
   },
 }
