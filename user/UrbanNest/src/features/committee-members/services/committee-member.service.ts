@@ -126,6 +126,8 @@ export interface CommitteeMemberService {
   deleteCommitteeMember(id: string): Promise<CommitteeMemberDetails>
   activateCommitteeMember(id: string): Promise<CommitteeMemberDetails>
   deactivateCommitteeMember(id: string): Promise<CommitteeMemberDetails>
+  demoteCommitteeMemberRole(id: string): Promise<CommitteeMemberDetails>
+  promoteCommitteeMemberByResident(resident: any): Promise<void>
 }
 
 export const committeeMemberService: CommitteeMemberService = {
@@ -311,4 +313,59 @@ export const committeeMemberService: CommitteeMemberService = {
 
   activateCommitteeMember: (id) => updateStatus(id, "active"),
   deactivateCommitteeMember: (id) => updateStatus(id, "inactive"),
+  async demoteCommitteeMemberRole(id) {
+    await waitForMockResponse()
+    const index = getCommitteeMemberIndex(id)
+    const member = committeeMemberStore[index]
+    const now = new Date().toISOString()
+    const updated = {
+      ...member,
+      role: "resident" as any,
+      removedAt: now,
+      status: "inactive" as any,
+      updatedAt: now,
+    }
+    committeeMemberStore[index] = updated
+
+    const { residentService } = await import("@/features/residents/services/resident.service")
+    await residentService.demoteResidentRoleByEmail(member.email)
+
+    return clone(updated)
+  },
+  async promoteCommitteeMemberByResident(resident) {
+    const emailNormalized = normalizeText(resident.email)
+    const exists = committeeMemberStore.some(
+      (m) => normalizeText(m.email) === emailNormalized && m.removedAt === null
+    )
+    if (!exists) {
+      const now = new Date().toISOString()
+      committeeMemberStore.unshift({
+        id: `committee-${globalThis.crypto.randomUUID()}`,
+        role: "committee_member",
+        fullName: resident.fullName,
+        email: resident.email,
+        mobile: resident.mobile,
+        profileImageUrl: resident.profileImageUrl,
+        department: "Administration",
+        designation: "Committee Member",
+        responsibilities: ["Manage Residents"],
+        joinedDate: now.split("T")[0],
+        status: "active",
+        removedAt: null,
+        createdAt: now,
+        updatedAt: now,
+        assignedComplaints: [],
+        assignedBookings: [],
+        activityLog: [
+          {
+            id: `activity-${globalThis.crypto.randomUUID()}`,
+            type: "profile",
+            title: "Appointed to Committee",
+            description: "Appointed to the committee by the Committee Head.",
+            occurredAt: now,
+          },
+        ],
+      })
+    }
+  },
 }

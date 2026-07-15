@@ -25,6 +25,7 @@ export type ResidentMutation =
   | "deactivate"
   | "block"
   | "unblock"
+  | "promote"
 
 export interface ResidentPaginationState {
   page: number
@@ -226,6 +227,21 @@ export const unblockResident = createResidentActionThunk(
   "unblock",
   residentService.unblockResident,
 )
+export const promoteResident = createAsyncThunk<
+  ResidentDetails,
+  string,
+  ResidentThunkConfig
+>(
+  "residents/promoteResident",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await residentService.promoteResidentRole(id)
+    } catch (error) {
+      return rejectWithValue(getSafeErrorMessage(error))
+    }
+  },
+  { condition: canStartMutation }
+)
 
 const updateCachedResident = (
   state: Draft<ResidentsState>,
@@ -365,6 +381,11 @@ const residentsSlice = createSlice({
         state.activeMutation = "unblock"
         state.error = null
       })
+      .addCase(promoteResident.pending, (state) => {
+        state.mutationLoading = true
+        state.activeMutation = "promote"
+        state.error = null
+      })
       .addMatcher(
         isAnyOf(
           createResident.fulfilled,
@@ -375,6 +396,7 @@ const residentsSlice = createSlice({
           deactivateResident.fulfilled,
           blockResident.fulfilled,
           unblockResident.fulfilled,
+          promoteResident.fulfilled,
         ),
         (state, action) => {
           const isNewResident = state.activeMutation === "create"
@@ -401,6 +423,7 @@ const residentsSlice = createSlice({
           deactivateResident.rejected,
           blockResident.rejected,
           unblockResident.rejected,
+          promoteResident.rejected,
         ),
         (state, action) => {
           if (action.meta.condition) return

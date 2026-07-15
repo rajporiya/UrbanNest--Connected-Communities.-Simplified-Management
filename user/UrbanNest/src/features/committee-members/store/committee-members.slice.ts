@@ -22,6 +22,7 @@ export type CommitteeMemberMutation =
   | "delete"
   | "activate"
   | "deactivate"
+  | "demote"
 
 export interface CommitteeMemberPaginationState {
   page: number
@@ -220,6 +221,21 @@ export const deactivateCommitteeMember = createMemberActionThunk(
   "deactivate",
   committeeMemberService.deactivateCommitteeMember,
 )
+export const demoteCommitteeMember = createAsyncThunk<
+  CommitteeMemberDetails,
+  string,
+  CommitteeMemberThunkConfig
+>(
+  "committeeMembers/demoteCommitteeMember",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await committeeMemberService.demoteCommitteeMemberRole(id)
+    } catch (error) {
+      return rejectWithValue(getSafeErrorMessage(error))
+    }
+  },
+  { condition: canStartMutation },
+)
 
 function updateCachedMember(
   state: Draft<CommitteeMembersState>,
@@ -246,6 +262,7 @@ function mutationFromActionType(actionType: string): CommitteeMemberMutation {
   if (actionType.includes("deleteCommitteeMember")) return "delete"
   if (actionType.includes("deactivateCommitteeMember")) return "deactivate"
   if (actionType.includes("activateCommitteeMember")) return "activate"
+  if (actionType.includes("demoteCommitteeMember")) return "demote"
   return "deactivate"
 }
 
@@ -331,21 +348,24 @@ const committeeMembersSlice = createSlice({
           state.error = action.payload ?? "Committee member details could not be loaded."
         }
       })
-      .addCase(deleteCommitteeMember.fulfilled, (state, action) => {
-        state.mutationLoading = false
-        state.activeMutation = null
-        state.members = state.members.filter(
-          (member) => member.id !== action.payload.id,
-        )
-        if (state.selectedMember?.id === action.payload.id) {
-          state.selectedMember = null
+      .addMatcher(
+        isAnyOf(deleteCommitteeMember.fulfilled, demoteCommitteeMember.fulfilled),
+        (state, action) => {
+          state.mutationLoading = false
+          state.activeMutation = null
+          state.members = state.members.filter(
+            (member) => member.id !== action.payload.id,
+          )
+          if (state.selectedMember?.id === action.payload.id) {
+            state.selectedMember = null
+          }
+          state.pagination.total = Math.max(0, state.pagination.total - 1)
+          state.pagination.totalPages = Math.max(
+            1,
+            Math.ceil(state.pagination.total / state.pagination.limit),
+          )
         }
-        state.pagination.total = Math.max(0, state.pagination.total - 1)
-        state.pagination.totalPages = Math.max(
-          1,
-          Math.ceil(state.pagination.total / state.pagination.limit),
-        )
-      })
+      )
       .addMatcher(
         isAnyOf(
           createCommitteeMember.pending,
@@ -353,6 +373,7 @@ const committeeMembersSlice = createSlice({
           deleteCommitteeMember.pending,
           activateCommitteeMember.pending,
           deactivateCommitteeMember.pending,
+          demoteCommitteeMember.pending,
         ),
         (state, action) => {
           state.mutationLoading = true
@@ -394,6 +415,7 @@ const committeeMembersSlice = createSlice({
           deleteCommitteeMember.rejected,
           activateCommitteeMember.rejected,
           deactivateCommitteeMember.rejected,
+          demoteCommitteeMember.rejected,
         ),
         (state, action) => {
           if (action.meta.condition) return

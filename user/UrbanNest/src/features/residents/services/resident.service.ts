@@ -187,6 +187,8 @@ export interface ResidentService {
   deactivateResident(id: string): Promise<ResidentDetails>
   blockResident(id: string): Promise<ResidentDetails>
   unblockResident(id: string): Promise<ResidentDetails>
+  promoteResidentRole(id: string): Promise<ResidentDetails>
+  demoteResidentRoleByEmail(email: string): Promise<void>
 }
 
 export const residentService: ResidentService = {
@@ -365,4 +367,32 @@ export const residentService: ResidentService = {
   deactivateResident: (id) => updateAccountStatus(id, ["active"], "inactive"),
   blockResident: (id) => updateAccountStatus(id, ["active", "inactive"], "blocked"),
   unblockResident: (id) => updateAccountStatus(id, ["blocked"], "active"),
+  async promoteResidentRole(id) {
+    await waitForMockResponse()
+    const index = getResidentIndex(id)
+    const resident = residentStore[index]
+
+    const updated = {
+      ...resident,
+      role: "committee_member" as any,
+      updatedAt: new Date().toISOString(),
+    }
+    residentStore[index] = updated
+
+    const { committeeMemberService } = await import("@/features/committee-members/services/committee-member.service")
+    await committeeMemberService.promoteCommitteeMemberByResident(resident)
+
+    return clone(updated)
+  },
+  async demoteResidentRoleByEmail(email) {
+    const emailNormalized = normalizeText(email)
+    const index = residentStore.findIndex((r) => normalizeText(r.email) === emailNormalized)
+    if (index >= 0) {
+      residentStore[index] = {
+        ...residentStore[index],
+        role: "resident" as any,
+        updatedAt: new Date().toISOString(),
+      }
+    }
+  },
 }
