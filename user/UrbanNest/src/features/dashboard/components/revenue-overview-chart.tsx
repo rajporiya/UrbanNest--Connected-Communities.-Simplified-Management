@@ -1,0 +1,7 @@
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { ContentCard } from "@/components/common/content-card"
+import { EmptyState } from "@/components/feedback/empty-state"
+import type { RevenueChartPoint } from "@/features/dashboard/types/dashboard.types"
+
+const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 })
+export function RevenueOverviewChart({ data, loading = false }: { data: RevenueChartPoint[]; loading?: boolean }) { return <ContentCard title="Revenue overview" description="Collected revenue and pending amount by month" loading={loading}><div role="img" aria-label="Monthly collected revenue and pending amount chart" className="h-72 min-w-0">{data.length ? <ResponsiveContainer width="100%" height="100%"><AreaChart data={data}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="month" /><YAxis tickFormatter={(v: number) => `₹${Math.round(v / 100000)}L`} /><Tooltip formatter={(value) => currency.format(Number(value))} /><Area type="monotone" dataKey="collected" name="Collected" stroke="var(--chart-2)" fill="var(--chart-2)" fillOpacity={0.2} /><Area type="monotone" dataKey="pending" name="Pending" stroke="var(--chart-4)" fill="var(--chart-4)" fillOpacity={0.15} /></AreaChart></ResponsiveContainer> : <EmptyState compact title="No revenue data" />}</div></ContentCard> }

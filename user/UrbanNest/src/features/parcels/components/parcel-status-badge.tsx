@@ -1,0 +1,6 @@
+import { BellRing, CheckCircle2, PackageCheck, RotateCcw } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import type { ParcelStatus } from "@/features/parcels/types/parcel.types"
+import { cn } from "@/lib/utils"
+const config = { received: { label: "Received", icon: PackageCheck, className: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-300" }, notified: { label: "Resident notified", icon: BellRing, className: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-300" }, collected: { label: "Collected", icon: CheckCircle2, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300" }, returned: { label: "Returned", icon: RotateCcw, className: "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300" } } as const
+export function ParcelStatusBadge({ status, className }: { status: ParcelStatus; className?: string }) { const item = config[status]; const Icon = item.icon; return <Badge variant="outline" className={cn("gap-1.5 whitespace-nowrap", item.className, className)}><Icon className="size-3.5" />{item.label}</Badge> }

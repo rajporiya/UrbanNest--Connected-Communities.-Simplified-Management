@@ -1,8 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import * as React from "react"
 
-type Theme = "dark" | "light" | "system"
-type ResolvedTheme = "dark" | "light"
+export type Theme = "dark" | "light" | "system"
+export type ResolvedTheme = "dark" | "light"
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -80,7 +80,7 @@ function isEditableTarget(target: EventTarget | null) {
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  storageKey = "theme",
+  storageKey = "urbannest-theme",
   disableTransitionOnChange = true,
   ...props
 }: ThemeProviderProps) {
@@ -120,7 +120,7 @@ export function ThemeProvider({
     [disableTransitionOnChange]
   )
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     applyTheme(theme)
 
     if (theme !== "system") {

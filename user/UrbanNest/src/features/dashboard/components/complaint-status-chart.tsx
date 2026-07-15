@@ -1,0 +1,5 @@
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { ContentCard } from "@/components/common/content-card"
+import { EmptyState } from "@/components/feedback/empty-state"
+import type { ComplaintStatusPoint } from "@/features/dashboard/types/dashboard.types"
+export function ComplaintStatusChart({ data, loading = false }: { data: ComplaintStatusPoint[]; loading?: boolean }) { const total = data.reduce((sum, point) => sum + point.value, 0); return <ContentCard title="Complaint status overview" description={`${total} total complaints`} loading={loading}><div role="img" aria-label="Complaint counts by visible status label" className="h-72">{data.length ? <ResponsiveContainer width="100%" height="100%"><BarChart data={data}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="status" interval={0} angle={-15} height={55} textAnchor="end" /><YAxis allowDecimals={false} /><Tooltip /><Bar dataKey="value" name="Complaints" fill="var(--chart-3)" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer> : <EmptyState compact title="No complaint data" />}</div></ContentCard> }

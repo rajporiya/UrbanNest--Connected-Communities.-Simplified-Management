@@ -10,23 +10,25 @@ export const resetPasswordValidation = [
     .notEmpty()
     .withMessage("Token is required")
     .isString()
-    .withMessage("Token must be a valid string"),
-  body("password")
+    .withMessage("Token must be a valid string")
+    .matches(/^[a-f0-9]{64}$/i)
+    .withMessage("Token must be a valid reset token"),
+  body("newPassword")
     .trim()
     .notEmpty()
-    .withMessage("Password is required")
+    .withMessage("New password is required")
     .isLength({ min: 8, max: 20 })
-    .withMessage("Password must be between 8 and 20 characters")
+    .withMessage("New password must be between 8 and 20 characters")
     .matches(strongPasswordPattern)
     .withMessage(
-      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+      "New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
     ),
   body("confirmPassword")
     .trim()
     .notEmpty()
     .withMessage("Confirm password is required")
-    .custom((value, { req }) => value === req.body.password)
-    .withMessage("Confirm password must match password"),
+    .custom((value, { req }) => value === req.body.newPassword)
+    .withMessage("Confirm password must match new password"),
 ]
 
 export { validationResultMiddleware }
