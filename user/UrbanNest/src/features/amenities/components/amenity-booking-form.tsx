@@ -79,7 +79,8 @@ export function AmenityBookingForm({
             Capacity: {selected?.capacity ?? 0}
           </p>
         </label>
-        <div className="sm:col-span-2">
+        <div className="sm:col-span-2 space-y-1.5">
+          <RequiredLabel required>Booking Date</RequiredLabel>
           <Controller
             control={form.control}
             name="bookingDate"

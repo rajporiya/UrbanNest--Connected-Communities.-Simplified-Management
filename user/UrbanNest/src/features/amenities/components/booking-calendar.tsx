@@ -35,7 +35,7 @@ export function BookingCalendar({
   return (
     <section
       aria-label="Booking date calendar"
-      className="rounded-xl border p-3 sm:p-4"
+      className="max-w-md w-full rounded-xl border bg-background p-3 sm:p-4 shadow-sm"
     >
       <header className="mb-4 flex items-center justify-between">
         <Button
@@ -86,7 +86,7 @@ export function BookingCalendar({
               onClick={() => onChange(iso(date))}
               aria-pressed={value === iso(date)}
               className={cn(
-                "relative aspect-square rounded-lg text-sm transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-30",
+                "relative aspect-square rounded-full text-sm transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-30",
                 value === iso(date) &&
                   "bg-primary text-primary-foreground hover:bg-primary",
                 iso(date) === iso(today) &&
