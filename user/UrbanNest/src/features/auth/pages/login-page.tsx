@@ -27,8 +27,13 @@ export function LoginPage() {
   const from = (location.state as { from?: string } | null)?.from ?? ROUTES.DASHBOARD
 
   const submit = async (values: LoginFormValues) => {
-    try { await dispatch(login(values)).unwrap(); toast.success("Welcome back to UrbanNest"); navigate(from, { replace: true }) }
-    catch { toast.error("Sign in failed. Check your credentials and try again.") }
+    try {
+      const response = await dispatch(login(values)).unwrap()
+      toast.success(`Welcome Back ${response.user.firstName} ${response.user.lastName}`)
+      navigate(from, { replace: true })
+    } catch {
+      toast.error("Sign in failed. Check your credentials and try again.")
+    }
   }
 
   return (
