@@ -81,8 +81,6 @@ export async function softDeleteTower(id) {
   if (await Flat.exists({ towerId: id, isDeleted: false })) {
     throw new ApiError(409, "Tower cannot be deleted while it contains flats.")
   }
-  tower.isDeleted = true
-  tower.deletedAt = new Date()
-  tower.status = "Inactive"
-  return tower.save()
+  await Tower.deleteOne({ _id: id })
+  return tower
 }

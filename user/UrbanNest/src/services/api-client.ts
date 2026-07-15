@@ -41,19 +41,7 @@ apiClient.interceptors.request.use(async (config) => {
 
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError<ApiErrorResponse>) => {
-    const status = error.response?.status
-    if (status === 401) {
-      try {
-        const { store } = await import("@/app/store")
-        const { clearSession } = await import("@/features/auth/store/auth.slice")
-        if (store.getState().auth.accessToken) {
-          store.dispatch(clearSession())
-        }
-      } catch (e) {
-        // ignore dynamic import errors
-      }
-    }
+  (error: AxiosError<ApiErrorResponse>) => {
     showErrorOnce(errorMessage(error))
     return Promise.reject(error)
   }

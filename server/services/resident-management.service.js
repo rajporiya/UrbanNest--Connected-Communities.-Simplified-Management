@@ -232,19 +232,8 @@ export function setResidentStatus(id, status) {
 export async function softDeleteResident(id) {
   const current = await requireResidentProfile(id, false)
   await withTransaction(async (session) => {
-    await Resident.updateOne(
-      { _id: current._id },
-      { $set: { isDeleted: true, deletedAt: new Date(), status: "Inactive" } },
-      { session }
-    )
-    await User.updateOne(
-      { _id: current.userId },
-      {
-        $set: { isActive: false, tower: "", floor: "", flat: "" },
-        $unset: { refreshToken: "", sessionId: "" },
-      },
-      { session }
-    )
+    await Resident.deleteOne({ _id: current._id }, { session })
+    await User.deleteOne({ _id: current.userId }, { session })
     await updateFlatOccupancy(current.flatId, session)
   })
 }

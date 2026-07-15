@@ -175,11 +175,7 @@ export function setSecurityGuardStatus(id, status) {
 export async function removeSecurityGuard(id) {
   const guard = await requireGuard(id)
   await withTransaction(async (session) => {
-    await SecurityGuard.updateOne(
-      { _id: id },
-      { $set: { isDeleted: true, deletedAt: new Date(), status: "Inactive" } },
-      { session }
-    )
-    await synchronizeUserStatus(guard.userId._id, "Inactive", session)
+    await SecurityGuard.deleteOne({ _id: id }, { session })
+    await User.deleteOne({ _id: guard.userId._id }, { session })
   })
 }

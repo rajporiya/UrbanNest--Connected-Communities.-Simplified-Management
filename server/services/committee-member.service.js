@@ -145,11 +145,7 @@ export function setCommitteeMemberStatus(id, status) {
 export async function removeCommitteeMember(id) {
   const member = await requireMember(id)
   await withTransaction(async (session) => {
-    await CommitteeMember.updateOne(
-      { _id: id },
-      { $set: { isDeleted: true, deletedAt: new Date(), status: "Inactive" } },
-      { session }
-    )
-    await synchronizeUserStatus(member.userId._id, "Inactive", session)
+    await CommitteeMember.deleteOne({ _id: id }, { session })
+    await User.deleteOne({ _id: member.userId._id }, { session })
   })
 }

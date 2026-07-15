@@ -100,7 +100,6 @@ export async function updateFlat(id, data) {
 export async function softDeleteFlat(id) {
   const flat = await Flat.findOne({ _id: id, isDeleted: false })
   if (!flat) throw new ApiError(404, "Flat not found.")
-  flat.isDeleted = true
-  flat.deletedAt = new Date()
-  return flat.save()
+  await Flat.deleteOne({ _id: id })
+  return flat
 }

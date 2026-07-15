@@ -171,13 +171,6 @@ export function setManagedUserStatus(userId, isActive, actorUserId) {
 export async function softDeleteManagedUser(userId, actorUserId) {
   const user = await User.findById(userId)
   ensureManageableUser(user, actorUserId)
-  const deletedUser = await User.findByIdAndUpdate(
-    userId,
-    {
-      $set: { isDeleted: true, isActive: false, deletedAt: new Date() },
-      $unset: { refreshToken: "", sessionId: "" },
-    },
-    { new: true }
-  )
-  return serializeUser(deletedUser)
+  await User.deleteOne({ _id: userId })
+  return serializeUser(user)
 }
