@@ -69,7 +69,7 @@ const accessRules: ReadonlyArray<{
   },
 ]
 
-export function canAccessGlobalSearchResult(
+function canAccessGlobalSearchResult(
   result: GlobalSearchResult,
   role: UserRole | undefined
 ) {

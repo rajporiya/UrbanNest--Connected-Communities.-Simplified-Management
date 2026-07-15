@@ -8,6 +8,7 @@ import type {
   CreateCommitteeMemberRequest,
   UpdateCommitteeMemberRequest,
 } from "@/features/committee-members/types/committee-member.types"
+import type { ResidentDetails } from "@/features/residents/types/resident.types"
 
 const DEFAULT_PAGE = 1
 const DEFAULT_LIMIT = 10
@@ -127,7 +128,7 @@ export interface CommitteeMemberService {
   activateCommitteeMember(id: string): Promise<CommitteeMemberDetails>
   deactivateCommitteeMember(id: string): Promise<CommitteeMemberDetails>
   demoteCommitteeMemberRole(id: string): Promise<CommitteeMemberDetails>
-  promoteCommitteeMemberByResident(resident: any): Promise<void>
+  promoteCommitteeMemberByResident(resident: ResidentDetails): Promise<void>
 }
 
 export const committeeMemberService: CommitteeMemberService = {
@@ -320,9 +321,9 @@ export const committeeMemberService: CommitteeMemberService = {
     const now = new Date().toISOString()
     const updated = {
       ...member,
-      role: "resident" as any,
+      role: "resident" as unknown as "committee_member",
       removedAt: now,
-      status: "inactive" as any,
+      status: "inactive",
       updatedAt: now,
     }
     committeeMemberStore[index] = updated

@@ -1,6 +1,6 @@
 export const JWT_CONFIG = {
-  secret: process.env.JWT_SECRET || "dev-jwt-secret",
-  expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+  secret: process.env.JWT_SECRET || process.env.JWT_SECRET_KEY || "dev-jwt-secret",
+  expiresIn: process.env.JWT_EXPIRES_IN || process.env.JWT_EXPIRE_KEY || "7d",
 }
 
 export const USER_ROLES = {

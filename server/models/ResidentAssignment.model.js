@@ -6,7 +6,6 @@ const residentAssignmentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
     towerId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -18,7 +17,6 @@ const residentAssignmentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Flat",
       required: true,
-      index: true,
     },
     status: {
       type: String,

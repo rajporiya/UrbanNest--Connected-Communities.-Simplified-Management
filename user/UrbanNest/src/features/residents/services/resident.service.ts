@@ -398,7 +398,7 @@ export const residentService: ResidentService = {
 
     const updated = {
       ...resident,
-      role: "committee_member" as any,
+      role: "committee_member" as unknown as "resident",
       updatedAt: new Date().toISOString(),
     }
     residentStore[index] = updated
@@ -414,7 +414,7 @@ export const residentService: ResidentService = {
     if (index >= 0) {
       residentStore[index] = {
         ...residentStore[index],
-        role: "resident" as any,
+        role: "resident",
         updatedAt: new Date().toISOString(),
       }
     }
