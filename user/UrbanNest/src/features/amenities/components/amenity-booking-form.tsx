@@ -34,20 +34,22 @@ export function AmenityBookingForm({
   })
   const selectedId = useWatch({ control: form.control, name: "amenityId" })
   const date = useWatch({ control: form.control, name: "bookingDate" })
-  const selectedSlotId = useWatch({ control: form.control, name: "slotId" })
   const selected = amenities.find((item) => item.id === selectedId)
   const [month, setMonth] = useState(() =>
     date ? new Date(`${date}T00:00:00`) : new Date()
   )
-  useEffect(() => {
-    form.setValue("slotId", "")
-  }, [form, selectedId])
-  const slots = useMemo(() => selected?.slots ?? [], [selected])
+  const submitHandler = (values: AmenityBookingFormValues) => {
+    void onSubmit({
+      ...values,
+      slotId: `custom-${values.startTime}-${values.endTime}`,
+    })
+  }
+
   return (
     <form
       className="space-y-8"
       noValidate
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={form.handleSubmit(submitHandler)}
     >
       <FormSection
         title="Select amenity"
@@ -108,36 +110,35 @@ export function AmenityBookingForm({
             : "Available bookings are approved instantly."
         }
         icon={<Clock3 />}
+        columns={2}
       >
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {slots.map((slot) => (
-            <label
-              key={slot.id}
-              className={cn(
-                "relative cursor-pointer rounded-xl border p-4 transition-colors hover:bg-muted/50",
-                selectedSlotId === slot.id &&
-                  "border-primary bg-primary/5 ring-1 ring-primary"
-              )}
-            >
-              <input
-                type="radio"
-                value={slot.id}
-                className="sr-only"
-                {...form.register("slotId")}
-              />
-              <span className="block font-medium">{slot.label}</span>
-              <span className="text-sm text-muted-foreground">
-                {slot.startTime}–{slot.endTime}
-              </span>
-            </label>
-          ))}
-        </div>
-        {form.formState.errors.slotId && (
-          <p className="text-xs text-destructive">
-            {form.formState.errors.slotId.message}
-          </p>
-        )}
-        <label className="block space-y-1.5">
+        <label className="space-y-1.5">
+          <RequiredLabel required>Start Time</RequiredLabel>
+          <input
+            type="time"
+            className={control}
+            {...form.register("startTime")}
+          />
+          {form.formState.errors.startTime && (
+            <p className="text-xs text-destructive">
+              {form.formState.errors.startTime.message}
+            </p>
+          )}
+        </label>
+        <label className="space-y-1.5">
+          <RequiredLabel required>End Time</RequiredLabel>
+          <input
+            type="time"
+            className={control}
+            {...form.register("endTime")}
+          />
+          {form.formState.errors.endTime && (
+            <p className="text-xs text-destructive">
+              {form.formState.errors.endTime.message}
+            </p>
+          )}
+        </label>
+        <label className="block sm:col-span-2 space-y-1.5">
           <RequiredLabel required>Purpose</RequiredLabel>
           <textarea
             rows={4}

@@ -6,6 +6,7 @@ import type {
   Amenity,
   AmenityBooking,
   AmenityBookingInput,
+  AmenitySlot,
   BookingListQuery,
   BookingListResponse,
   BookingStatus,
@@ -72,21 +73,51 @@ export const amenityService = {
   ) {
     await delay()
     const amenity = mockAmenities.find((item) => item.id === input.amenityId)
-    const slot = amenity?.slots.find((item) => item.id === input.slotId)
-    if (!amenity || !slot)
-      throw new Error("Selected amenity or time slot is unavailable")
+    if (!amenity) throw new Error("Selected amenity is unavailable")
+
+    let slot: AmenitySlot | undefined
+    if (input.slotId.startsWith("custom-")) {
+      const parts = input.slotId.split("-")
+      const startTime = parts[1]
+      const endTime = parts[2]
+      slot = {
+        id: input.slotId,
+        label: `${startTime}–${endTime}`,
+        startTime,
+        endTime,
+        available: true,
+      }
+    } else {
+      slot = amenity.slots.find((item) => item.id === input.slotId)
+    }
+
+    if (!slot) throw new Error("Selected time slot is unavailable")
     if (input.guests > amenity.capacity)
       throw new Error(`This amenity allows up to ${amenity.capacity} guests`)
-    if (
-      store.some(
-        (item) =>
-          item.amenityId === input.amenityId &&
-          item.bookingDate === input.bookingDate &&
-          item.slot.id === input.slotId &&
-          item.status !== "rejected"
-      )
+
+    const timeToMinutes = (t: string) => {
+      const [h, m] = t.split(":").map(Number)
+      return h * 60 + (m || 0)
+    }
+    const startMins = timeToMinutes(slot.startTime)
+    const endMins = timeToMinutes(slot.endTime)
+
+    if (startMins >= endMins) {
+      throw new Error("End time must be after start time")
+    }
+
+    const hasOverlap = store.some(
+      (item) =>
+        item.amenityId === input.amenityId &&
+        item.bookingDate === input.bookingDate &&
+        item.status !== "rejected" &&
+        timeToMinutes(item.slot.startTime) < endMins &&
+        timeToMinutes(item.slot.endTime) > startMins
     )
-      throw new Error("This time slot has already been booked")
+    if (hasOverlap) {
+      throw new Error("This time slot overlaps with an existing booking")
+    }
+
     const item: AmenityBooking = {
       id: `book-${crypto.randomUUID()}`,
       amenityId: amenity.id,
