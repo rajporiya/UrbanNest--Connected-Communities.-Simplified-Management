@@ -30,6 +30,9 @@ export const amenityService = {
     let items = store.filter(
       (item) =>
         (!query.residentId || item.residentId === query.residentId) &&
+        (!query.viewerResidentId ||
+          item.status === "approved" ||
+          item.residentId === query.viewerResidentId) &&
         (!query.amenityId || item.amenityId === query.amenityId) &&
         (!query.status || item.status === query.status) &&
         (!search ||

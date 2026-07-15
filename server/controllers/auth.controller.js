@@ -28,6 +28,8 @@ export const register = asyncHandler(async (req, res) => {
     password,
     confirmPassword,
     role,
+    tower,
+    flat,
   } = req.body
 
   const normalizedEmail = email.trim().toLowerCase()
@@ -55,6 +57,8 @@ export const register = asyncHandler(async (req, res) => {
     phone: normalizedPhone,
     password: hashedPassword,
     role: Object.values(ROLES).includes(selectedRole) ? selectedRole : DEFAULT_ROLE,
+    tower: typeof tower === "string" ? tower.trim() : "",
+    flat: typeof flat === "string" ? flat.trim() : "",
     isActive: true,
     isEmailVerified: false,
   }
@@ -66,7 +70,14 @@ export const register = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Registration failed.")
   }
 
-  await sendUserVerificationEmail(registeredUser._id)
+  // Account creation must not be reported as failed solely because the optional
+  // verification-email provider is unavailable. The user has already been saved
+  // at this point and can verify later.
+  try {
+    await sendUserVerificationEmail(registeredUser._id)
+  } catch (error) {
+    console.error("Unable to send registration verification email:", error.message)
+  }
 
   return successResponse(
     res,

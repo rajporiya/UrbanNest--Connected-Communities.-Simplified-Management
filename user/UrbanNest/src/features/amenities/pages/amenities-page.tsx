@@ -53,7 +53,7 @@ export function AmenitiesPage() {
         sort,
         page,
         limit,
-        residentId: user?.role === ROLES.RESIDENT ? user.id : undefined,
+        viewerResidentId: user?.role === ROLES.RESIDENT ? user.id : undefined,
       })
     )
   }, [dispatch, search, status, sort, page, limit, user?.id, user?.role])
@@ -183,7 +183,7 @@ export function AmenitiesPage() {
       <section className="space-y-4" aria-labelledby="booking-history">
         <h2 id="booking-history" className="text-lg font-semibold">
           {user?.role === ROLES.RESIDENT
-            ? "My booking history"
+            ? "My bookings & approved schedule"
             : "Booking approvals"}
         </h2>
         <TableToolbar

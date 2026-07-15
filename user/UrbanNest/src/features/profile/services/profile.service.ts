@@ -1,5 +1,7 @@
 import type { AuthUser } from "@/features/auth/types/auth.types"
-import { profileMock } from "@/features/profile/data/profile.mock"
+import { ROLES, type UserRole } from "@/constants/roles.constants"
+import { API_ENDPOINTS } from "@/services/api-endpoints"
+import { api } from "@/services/api-client"
 import {
   changePasswordSchema,
   profileSchema,
@@ -22,20 +24,50 @@ function getActiveProfile() {
   return profile
 }
 
+type ApiProfile = {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  role: string
+  profileImage?: { secure_url?: string } | null
+  createdAt?: string
+  lastLoginAt?: string
+}
+
+const roleMap: Record<string, UserRole> = {
+  "committee head": ROLES.COMMITTEE_HEAD,
+  "committe head": ROLES.COMMITTEE_HEAD,
+  "committee member": ROLES.COMMITTEE_MEMBER,
+  resident: ROLES.RESIDENT,
+  "security guard": ROLES.SECURITY_GUARD,
+}
+
+function toUserProfile(profile: ApiProfile, existing?: UserProfile): UserProfile {
+  return {
+    id: profile.id,
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    email: profile.email,
+    phone: profile.phone,
+    role: roleMap[profile.role.trim().toLowerCase()] ?? ROLES.RESIDENT,
+    avatar: profile.profileImage?.secure_url ?? null,
+    bio: existing?.bio ?? "",
+    address: existing?.address ?? "",
+    emergencyContact: existing?.emergencyContact ?? "",
+    twoFactorEnabled: existing?.twoFactorEnabled ?? false,
+    joinedAt: profile.createdAt ?? existing?.joinedAt ?? new Date().toISOString(),
+    lastLoginAt: profile.lastLoginAt ?? existing?.lastLoginAt ?? "",
+  }
+}
+
 export const profileService = {
   async getProfile(user: AuthUser): Promise<UserProfile> {
-    await wait()
     activeProfileId = user.id
     const existing = profileStore.get(user.id)
-    const profile: UserProfile = existing ?? {
-      ...structuredClone(profileMock),
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      role: user.role,
-      avatar: user.avatar ?? profileMock.avatar ?? null,
-    }
+    const response = await api.get<{ user: ApiProfile }>(API_ENDPOINTS.profile)
+    const profile = toUserProfile(response.data.user, existing)
     profileStore.set(user.id, profile)
     return structuredClone(profile)
   },

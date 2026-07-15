@@ -21,7 +21,7 @@ export function DashboardSidebar({ className }: { className?: string }) {
 
   return (
     <aside className={cn("sticky top-0 hidden h-svh shrink-0 border-r border-border bg-background transition-[width] duration-200 motion-reduce:transition-none lg:flex lg:flex-col", collapsed ? "w-20" : "w-64", className)}>
-      <div className={cn("flex h-20 items-center", collapsed ? "justify-center px-2" : "px-5")}>
+      <div className={cn("flex h-16 items-center", collapsed ? "justify-center px-2" : "px-5")}>
         {collapsed ? <AppLogo size="sm" showText={false} /> : <AppBrand showTagline={false} logoSize="sm" />}
       </div>
       <Separator />

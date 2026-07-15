@@ -6,27 +6,30 @@ const TOKEN_ISSUER = "urban-nest-api"
 const TOKEN_AUDIENCE = "urban-nest-client"
 
 function getJwtSecret() {
-  const secret = process.env.JWT_SECRET
+  // JWT_SECRET_KEY is kept for compatibility with the project's existing .env.
+  const secret = process.env.JWT_SECRET || process.env.JWT_SECRET_KEY
 
   if (!secret) {
-    throw new Error("JWT_SECRET is not configured")
+    throw new Error("JWT_SECRET or JWT_SECRET_KEY is not configured")
   }
 
   return secret
 }
 
 function getRefreshTokenSecret() {
-  const secret = process.env.REFRESH_TOKEN_SECRET
+  const secret = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_REFRESH_SECRET
 
-  if (!secret) {
-    throw new Error("REFRESH_TOKEN_SECRET is not configured")
+  if (secret) {
+    if (secret === getJwtSecret()) {
+      throw new Error("REFRESH_TOKEN_SECRET must be different from JWT_SECRET")
+    }
+
+    return secret
   }
 
-  if (secret === getJwtSecret()) {
-    throw new Error("REFRESH_TOKEN_SECRET must be different from JWT_SECRET")
-  }
-
-  return secret
+  // Older installations have one JWT secret only. Derive a distinct signing
+  // key from it so access and refresh tokens are never signed with the same key.
+  return `${getJwtSecret()}:refresh`
 }
 
 // Generate a signed access token for the provided payload.

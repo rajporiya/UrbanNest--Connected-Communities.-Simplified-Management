@@ -1,58 +1,8 @@
+import { useEffect, useState } from "react"
+import QRCode from "qrcode"
+
 import { CopyableText } from "@/components/common/copyable-text"
 import { cn } from "@/lib/utils"
-
-const GRID_SIZE = 21
-
-function createSeed(value: string) {
-  let seed = 2166136261
-
-  for (const character of value || "UrbanNest") {
-    seed ^= character.charCodeAt(0)
-    seed = Math.imul(seed, 16777619)
-  }
-
-  return seed >>> 0
-}
-
-function isFinderCell(row: number, column: number) {
-  const origins = [
-    [0, 0],
-    [0, GRID_SIZE - 7],
-    [GRID_SIZE - 7, 0],
-  ] as const
-
-  return origins.some(([top, left]) => {
-    const localRow = row - top
-    const localColumn = column - left
-    if (localRow < 0 || localRow > 6 || localColumn < 0 || localColumn > 6) {
-      return false
-    }
-
-    return (
-      localRow === 0 ||
-      localRow === 6 ||
-      localColumn === 0 ||
-      localColumn === 6 ||
-      (localRow >= 2 && localRow <= 4 && localColumn >= 2 && localColumn <= 4)
-    )
-  })
-}
-
-function createQrCells(value: string) {
-  let state = createSeed(value)
-
-  return Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, index) => {
-    const row = Math.floor(index / GRID_SIZE)
-    const column = index % GRID_SIZE
-
-    if (isFinderCell(row, column)) return true
-
-    state ^= state << 13
-    state ^= state >>> 17
-    state ^= state << 5
-    return (state >>> 0) % 2 === 0
-  })
-}
 
 export interface QrPreviewProps {
   value: string
@@ -65,7 +15,24 @@ export function QrPreview({
   label = "Visitor QR code",
   className,
 }: QrPreviewProps) {
-  const cells = createQrCells(value)
+  const [imageUrl, setImageUrl] = useState("")
+
+  useEffect(() => {
+    let active = true
+
+    void QRCode.toDataURL(value, {
+      errorCorrectionLevel: "M",
+      margin: 2,
+      width: 352,
+      color: { dark: "#0f172a", light: "#ffffff" },
+    }).then((url) => {
+      if (active) setImageUrl(url)
+    })
+
+    return () => {
+      active = false
+    }
+  }, [value])
 
   return (
     <figure
@@ -74,18 +41,19 @@ export function QrPreview({
         className
       )}
     >
-      <div
-        role="img"
-        aria-label={`${label} preview`}
-        className="grid size-44 grid-cols-[repeat(21,minmax(0,1fr))] overflow-hidden border-8 border-white bg-white shadow-sm"
-      >
-        {cells.map((filled, index) => (
-          <span
-            key={index}
-            aria-hidden="true"
-            className={filled ? "bg-slate-950" : "bg-white"}
+      <div className="grid size-44 place-items-center bg-white p-2 shadow-sm">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={`${label}: ${value}`}
+            className="size-full object-contain [image-rendering:pixelated]"
           />
-        ))}
+        ) : (
+          <div
+            className="size-full animate-pulse bg-muted"
+            aria-label="Generating QR code"
+          />
+        )}
       </div>
       <figcaption className="max-w-full min-w-0">
         <p className="text-sm font-semibold">{label}</p>

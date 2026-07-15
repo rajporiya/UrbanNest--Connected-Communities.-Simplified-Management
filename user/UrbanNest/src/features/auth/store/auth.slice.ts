@@ -19,6 +19,7 @@ const initialState: AuthState = { user: null, accessToken: null, isAuthenticated
 const message = (error: unknown) => error instanceof Error ? "We could not complete your request. Please try again." : "Authentication failed."
 
 export const login = createAsyncThunk("auth/login", async (request: LoginRequest, { rejectWithValue }) => { try { return await authService.login(request) } catch (error) { return rejectWithValue(message(error)) } })
+export const restoreSession = createAsyncThunk("auth/restoreSession", async (_, { rejectWithValue }) => { try { return await authService.getCurrentUser() } catch (error) { return rejectWithValue(message(error)) } })
 export const registerResident = createAsyncThunk("auth/register", async (request: RegisterResidentRequest, { rejectWithValue }) => { try { return await authService.registerResident(request) } catch (error) { return rejectWithValue(message(error)) } })
 export const forgotPassword = createAsyncThunk("auth/forgotPassword", async (request: ForgotPasswordRequest, { rejectWithValue }) => { try { return await authService.forgotPassword(request) } catch (error) { return rejectWithValue(message(error)) } })
 export const resetPassword = createAsyncThunk("auth/resetPassword", async (request: ResetPasswordRequest, { rejectWithValue }) => { try { return await authService.resetPassword(request) } catch (error) { return rejectWithValue(message(error)) } })
@@ -36,6 +37,7 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => { state.loginLoading = true; state.error = null })
       .addCase(login.fulfilled, (state, action) => { state.loginLoading = false; state.user = action.payload.user; state.accessToken = action.payload.accessToken; state.isAuthenticated = true })
       .addCase(login.rejected, (state, action) => { state.loginLoading = false; state.error = String(action.payload ?? "Unable to sign in.") })
+      .addCase(restoreSession.fulfilled, (state, action) => { state.user = action.payload; state.isAuthenticated = true })
       .addCase(registerResident.pending, (state) => { state.registerLoading = true; state.error = null })
       .addCase(registerResident.fulfilled, (state) => { state.registerLoading = false })
       .addCase(registerResident.rejected, (state, action) => { state.registerLoading = false; state.error = String(action.payload) })
