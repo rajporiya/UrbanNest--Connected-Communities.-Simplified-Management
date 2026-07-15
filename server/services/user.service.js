@@ -9,7 +9,7 @@ import {
 import { comparePassword, hashPassword } from "../utils/password.util.js"
 import crypto from "crypto"
 
-import { DEFAULT_ROLE } from "../config/roles.js"
+import ROLES, { DEFAULT_ROLE } from "../config/roles.js"
 import {
   deleteCloudinaryImage,
   uploadProfileImageToCloudinary,
@@ -139,6 +139,15 @@ async function createSessionTokens(user, sessionId) {
   return { accessToken, refreshToken }
 }
 
+// Some early accounts were inserted directly with the misspelled role
+// "Committe Head". Normalize it before creating a JWT so the account receives
+// the same permissions as every other Committee Head.
+function normalizeRole(role) {
+  return String(role || "").trim().toLowerCase() === "committe head"
+    ? ROLES.COMMITTEE_HEAD
+    : role
+}
+
 async function loginUser(loginData, sessionData = {}) {
   const { email, password } = loginData
 
@@ -157,6 +166,12 @@ async function loginUser(loginData, sessionData = {}) {
 
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid credentials.")
+  }
+
+  const normalizedRole = normalizeRole(user.role)
+  if (normalizedRole !== user.role) {
+    await User.updateOne({ _id: user._id }, { $set: { role: normalizedRole } })
+    user.role = normalizedRole
   }
 
   const sessionId = crypto.randomBytes(32).toString("hex")

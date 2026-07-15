@@ -55,6 +55,8 @@ export interface BookingListQuery {
   status?: BookingStatus
   sort?: BookingSort
   residentId?: string
+  /** Shows the resident's own requests plus bookings approved for everyone. */
+  viewerResidentId?: string
 }
 export interface BookingListResponse {
   items: AmenityBooking[]

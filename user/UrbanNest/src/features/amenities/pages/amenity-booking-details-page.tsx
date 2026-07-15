@@ -29,7 +29,8 @@ export function AmenityBookingDetailsPage() {
   const { selected, loading, mutating, error } = useSelector(
     (state: State) => state.amenities
   )
-  const role = useSelector((state: State) => state.auth.user?.role)
+  const user = useSelector((state: State) => state.auth.user)
+  const role = user?.role
   const [decision, setDecision] = useState<"approved" | "rejected" | null>(null)
   const [note, setNote] = useState("")
   useEffect(() => {
@@ -48,6 +49,22 @@ export function AmenityBookingDetailsPage() {
         }
       />
     )
+  if (
+    role === ROLES.RESIDENT &&
+    selected.status !== "approved" &&
+    selected.residentId !== user?.id
+  )
+    return (
+      <ErrorState
+        title="Booking not available"
+        description="Only approved bookings are visible to all residents."
+        backAction={
+          <Button variant="outline" render={<Link to={ROUTES.AMENITIES} />}>
+            Back to amenities
+          </Button>
+        }
+      />
+    )
   const review = async () => {
     if (!decision) return
     await dispatch(
@@ -55,7 +72,8 @@ export function AmenityBookingDetailsPage() {
     ).unwrap()
     toast.success(`Booking ${decision}`)
   }
-  const canReview = role !== ROLES.RESIDENT && selected.status === "pending"
+  const canReview =
+    role === ROLES.COMMITTEE_HEAD && selected.status === "pending"
   return (
     <div className="space-y-6">
       <PageHeader

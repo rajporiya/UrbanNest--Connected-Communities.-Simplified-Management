@@ -11,7 +11,8 @@ export class AuthServiceError extends Error {
 const wait = () => new Promise((resolve) => setTimeout(resolve, 500))
 
 type ApiUser = {
-  _id: string
+  _id?: string
+  id?: string
   firstName: string
   lastName: string
   email: string
@@ -22,19 +23,23 @@ type ApiUser = {
 type ApiLoginResponse = { user: ApiUser; accessToken: string; refreshToken: string }
 
 const roleMap: Record<string, UserRole> = {
-  "Committee Head": "committee_head",
-  "Committee Member": "committee_member",
-  Resident: "resident",
-  "Security Guard": "security_guard",
+  "committee head": "committee_head",
+  "committe head": "committee_head",
+  "committee member": "committee_member",
+  resident: "resident",
+  "security guard": "security_guard",
 }
+
+const toUserRole = (role: string): UserRole =>
+  roleMap[role.trim().toLowerCase()] ?? "resident"
 
 function toAuthUser(user: ApiUser): AuthUser {
   return {
-    id: user._id,
+    id: user._id ?? user.id ?? "",
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
-    role: roleMap[user.role] ?? "resident",
+    role: toUserRole(user.role),
     avatar: user.profileImage?.secure_url || null,
   }
 }
@@ -71,6 +76,10 @@ export const authService = {
       registrationPayload(request),
     )
     return { message: response.message }
+  },
+  async getCurrentUser(): Promise<AuthUser> {
+    const response = await api.get<{ user: ApiUser }>("/auth/profile")
+    return toAuthUser(response.data.user)
   },
   async forgotPassword(request: ForgotPasswordRequest): Promise<{ message: string }> {
     void request
