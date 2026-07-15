@@ -39,9 +39,21 @@ const persistedApplicationReducer = persistReducer(
   applicationReducer
 )
 
+const persistedAuthReducer = persistReducer(
+  {
+    key: `${APP_STORAGE_KEY}-auth`,
+    version: 1,
+    storage: browserStorage,
+    // Keep the signed-in session through a page refresh. Transient request
+    // state and errors deliberately remain in memory only.
+    whitelist: ["user", "accessToken", "isAuthenticated"],
+  },
+  authReducer
+)
+
 export const rootReducer = combineReducers({
   application: persistedApplicationReducer,
-  auth: authReducer,
+  auth: persistedAuthReducer,
   dashboard: dashboardReducer,
   residents: residentsReducer,
   committeeMembers: committeeMembersReducer,
