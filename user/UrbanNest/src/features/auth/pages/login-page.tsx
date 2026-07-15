@@ -29,7 +29,7 @@ export function LoginPage() {
   const submit = async (values: LoginFormValues) => {
     try {
       const response = await dispatch(login(values)).unwrap()
-      toast.success(`Welcome Back ${response.user.firstName} ${response.user.lastName}`)
+      toast.success(`Welcome Back ${response.user.firstName}  `)
       navigate(from, { replace: true })
     } catch {
       toast.error("Sign in failed. Check your credentials and try again.")

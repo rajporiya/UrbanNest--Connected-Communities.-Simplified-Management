@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import { seedDB } from "./seed.js"
 
 async function connectDB(mongoUri) {
   if (!mongoUri) {
@@ -7,7 +8,9 @@ async function connectDB(mongoUri) {
 
   mongoose.set("strictQuery", true)
 
-  return mongoose.connect(mongoUri)
+  const conn = await mongoose.connect(mongoUri)
+  await seedDB().catch((err) => console.error("DB seed failed:", err))
+  return conn
 }
 
 export { connectDB }

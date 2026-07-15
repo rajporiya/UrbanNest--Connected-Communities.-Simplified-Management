@@ -1,179 +1,60 @@
-import {
-  flatOptions,
-  mockResidentDetails,
-  towerOptions,
-} from "@/features/residents/data/residents.mock"
+import { api } from "@/services/api-client"
 import type {
   CreateResidentRequest,
-  EmergencyContact,
-  ResidentAccountStatus,
-  ResidentApprovalStatus,
   ResidentDetails,
-  ResidentFlat,
-  ResidentListItem,
   ResidentListQuery,
   ResidentListResponse,
   UpdateResidentRequest,
+  OwnershipType,
 } from "@/features/residents/types/resident.types"
 
-const MOCK_DELAY_MS = 250
-const DEFAULT_PAGE = 1
-const DEFAULT_LIMIT = 10
-
-const clone = <T>(value: T): T => structuredClone(value)
-
-const waitForMockResponse = () =>
-  new Promise<void>((resolve) => {
-    globalThis.setTimeout(resolve, MOCK_DELAY_MS)
-  })
-
-let residentStore: ResidentDetails[] = clone(mockResidentDetails)
-
-const normalizeText = (value: string) => value.trim().toLocaleLowerCase()
-
-const normalizePositiveInteger = (value: number | undefined, fallback: number) => {
-  if (value === undefined || !Number.isFinite(value)) return fallback
-  return Math.max(1, Math.trunc(value))
-}
-
-const getResidentIndex = (id: string) => {
-  const index = residentStore.findIndex((resident) => resident.id === id)
-  if (index === -1) throw new Error("Resident not found")
-  return index
-}
-
-const toListItem = (resident: ResidentDetails): ResidentListItem => ({
-  id: resident.id,
-  role: resident.role,
-  fullName: resident.fullName,
-  email: resident.email,
-  mobile: resident.mobile,
-  dateOfBirth: resident.dateOfBirth,
-  profileImageUrl: resident.profileImageUrl,
-  tower: resident.tower,
-  flat: resident.flat,
-  ownershipType: resident.ownershipType,
-  approvalStatus: resident.approvalStatus,
-  accountStatus: resident.accountStatus,
-  moveInDate: resident.moveInDate,
-  emergencyContact: resident.emergencyContact,
-  familyMemberCount: resident.familyMemberCount,
-  vehicleCount: resident.vehicleCount,
-  notes: resident.notes,
-  joinedAt: resident.joinedAt,
-  createdAt: resident.createdAt,
-  updatedAt: resident.updatedAt,
-})
-
-const resolveResidence = (
-  towerId: string,
-  flatNumber: string,
-  floor: number,
-): { tower: ResidentDetails["tower"]; flat: ResidentFlat } => {
-  const tower = towerOptions.find((option) => option.id === towerId)
-  if (!tower) throw new Error("Select a valid tower")
-
-  const normalizedFlatNumber = flatNumber.trim()
-  const configuredFlat = flatOptions.find(
-    (option) =>
-      option.towerId === towerId &&
-      normalizeText(option.number) === normalizeText(normalizedFlatNumber),
-  )
-
-  const flat: ResidentFlat = configuredFlat ?? {
-    id: `flat-${towerId}-${normalizeText(normalizedFlatNumber).replace(/[^a-z0-9]+/g, "-")}`,
-    towerId,
-    number: normalizedFlatNumber,
-    floor,
+function mapBackendResidentToFrontend(res: any): ResidentDetails {
+  return {
+    id: res._id,
+    role: "resident",
+    fullName: `${res.userId.firstName} ${res.userId.lastName}`.trim(),
+    email: res.userId.email,
+    mobile: res.userId.phone,
+    dateOfBirth: res.userId.dateOfBirth || null,
+    profileImageUrl: res.userId.profileImage?.secure_url || null,
+    tower: {
+      id: res.towerId?._id || "",
+      name: res.towerId?.towerName || "",
+    },
+    flat: {
+      id: res.flatId?._id || "",
+      towerId: res.towerId?._id || "",
+      number: res.flatId?.flatNumber || "",
+      floor: res.flatId?.floorNumber || 0,
+    },
+    ownershipType: (res.ownershipType?.toLowerCase() || "owner") as OwnershipType,
+    approvalStatus: res.status === "Active" ? "approved" : "pending",
+    accountStatus: res.userId.isActive ? "active" : "inactive",
+    moveInDate: res.moveInDate ? res.moveInDate.split("T")[0] : "",
+    emergencyContact: res.emergencyContact ? {
+      name: "Emergency",
+      mobile: res.emergencyContact,
+      relationship: "Contact",
+    } : null,
+    familyMemberCount: res.familyMemberCount || 0,
+    vehicleCount: 0,
+    notes: res.notes || "",
+    joinedAt: res.createdAt,
+    createdAt: res.createdAt,
+    updatedAt: res.updatedAt,
+    familyMembers: [],
+    vehicles: [],
+    maintenance: {
+      outstandingAmount: 0,
+      currentMonthCharge: 0,
+      totalPaidThisFinancialYear: 0,
+      lastPaymentAmount: null,
+      lastPaymentDate: null,
+      nextDueDate: null,
+    },
+    complaintSummary: { total: 0, open: 0, inProgress: 0, resolved: 0 },
+    visitorHistory: [],
   }
-
-  return { tower, flat: { ...flat, floor } }
-}
-
-const buildEmergencyContact = (
-  data: CreateResidentRequest | UpdateResidentRequest,
-  current: EmergencyContact | null = null,
-): EmergencyContact | null => {
-  const name = data.emergencyContactName?.trim() ?? current?.name ?? ""
-  const mobile = data.emergencyContactNumber?.trim() ?? current?.mobile ?? ""
-  const relationship =
-    data.emergencyContactRelationship?.trim() ?? current?.relationship ?? ""
-
-  if (!name && !mobile && !relationship) return null
-  return { name, mobile, relationship }
-}
-
-const ensureUniqueContact = (
-  email: string,
-  mobile: string,
-  excludedResidentId?: string,
-) => {
-  const normalizedEmail = normalizeText(email)
-  const normalizedMobile = mobile.trim()
-  const duplicate = residentStore.find(
-    (resident) =>
-      resident.id !== excludedResidentId &&
-      (normalizeText(resident.email) === normalizedEmail || resident.mobile === normalizedMobile),
-  )
-
-  if (!duplicate) return
-  if (normalizeText(duplicate.email) === normalizedEmail) {
-    throw new Error("A resident with this email already exists")
-  }
-  throw new Error("A resident with this mobile number already exists")
-}
-
-const replaceResident = (index: number, resident: ResidentDetails) => {
-  residentStore[index] = resident
-  return clone(resident)
-}
-
-const updateApprovalStatus = async (
-  id: string,
-  expectedStatus: ResidentApprovalStatus,
-  approvalStatus: ResidentApprovalStatus,
-) => {
-  await waitForMockResponse()
-  const index = getResidentIndex(id)
-  const resident = residentStore[index]
-
-  if (resident.approvalStatus !== expectedStatus) {
-    throw new Error(`Only ${expectedStatus} residents can be ${approvalStatus}`)
-  }
-
-  const accountStatus: ResidentAccountStatus =
-    approvalStatus === "approved" ? "active" : "inactive"
-
-  return replaceResident(index, {
-    ...resident,
-    approvalStatus,
-    accountStatus,
-    updatedAt: new Date().toISOString(),
-  })
-}
-
-const updateAccountStatus = async (
-  id: string,
-  allowedCurrentStatuses: ResidentAccountStatus[],
-  accountStatus: ResidentAccountStatus,
-) => {
-  await waitForMockResponse()
-  const index = getResidentIndex(id)
-  const resident = residentStore[index]
-
-  if (resident.approvalStatus !== "approved") {
-    throw new Error("Only approved residents can change account status")
-  }
-
-  if (!allowedCurrentStatuses.includes(resident.accountStatus)) {
-    throw new Error(`This resident account cannot be changed to ${accountStatus}`)
-  }
-
-  return replaceResident(index, {
-    ...resident,
-    accountStatus,
-    updatedAt: new Date().toISOString(),
-  })
 }
 
 export interface ResidentService {
@@ -194,236 +75,249 @@ export interface ResidentService {
 
 export const residentService: ResidentService = {
   async getResidents(query = {}) {
-    await waitForMockResponse()
-
-    let residents = residentStore.map(toListItem)
-    const search = normalizeText(query.search ?? "")
-
-    if (search) {
-      residents = residents.filter((resident) =>
-        [
-          resident.fullName,
-          resident.email,
-          resident.mobile,
-          resident.tower.name,
-          resident.flat.number,
-        ].some((value) => normalizeText(value).includes(search)),
-      )
-    }
-
-    if (query.approvalStatus) {
-      residents = residents.filter(
-        (resident) => resident.approvalStatus === query.approvalStatus,
-      )
-    }
-
-    if (query.accountStatus) {
-      residents = residents.filter(
-        (resident) => resident.accountStatus === query.accountStatus,
-      )
-    }
-
-    if (query.ownershipType) {
-      residents = residents.filter(
-        (resident) => resident.ownershipType === query.ownershipType,
-      )
+    const params: any = {
+      page: query.page,
+      limit: query.limit,
+      search: query.search,
+      ownershipType: query.ownershipType ? (query.ownershipType === "owner" ? "Owner" : "Tenant") : undefined,
+      status: query.approvalStatus === "approved" ? "Active" : query.approvalStatus === "pending" ? "Inactive" : undefined,
     }
 
     if (query.tower) {
-      const tower = normalizeText(query.tower)
-      residents = residents.filter((resident) => {
-        const towerName = normalizeText(resident.tower.name)
-        return (
-          normalizeText(resident.tower.id) === tower ||
-          towerName === tower ||
-          towerName.endsWith(` ${tower}`)
-        )
-      })
+      const towersRes = await api.get<{ towers: any[] }>("/towers?limit=100")
+      const dbTower = towersRes.data.towers.find((t: any) =>
+        t.towerName.toLowerCase() === query.tower!.toLowerCase() ||
+        t.towerName.toLowerCase() === `tower ${query.tower!.replace("tower-", "")}`.toLowerCase() ||
+        t.towerName.toLowerCase() === query.tower!.replace("-", " ").toLowerCase()
+      )
+      if (dbTower) {
+        params.towerId = dbTower._id
+      }
     }
 
-    residents.sort((left, right) => {
-      switch (query.sort ?? "newest") {
-        case "oldest":
-          return Date.parse(left.joinedAt) - Date.parse(right.joinedAt)
-        case "name_asc":
-          return left.fullName.localeCompare(right.fullName)
-        case "name_desc":
-          return right.fullName.localeCompare(left.fullName)
-        case "tower_asc":
-          return left.tower.name.localeCompare(right.tower.name, undefined, { numeric: true })
-        case "flat_asc":
-          return left.flat.number.localeCompare(right.flat.number, undefined, { numeric: true })
-        case "newest":
-        default:
-          return Date.parse(right.joinedAt) - Date.parse(left.joinedAt)
+    if (query.sort) {
+      if (query.sort === "oldest") {
+        params.sortBy = "moveInDate"
+        params.sortOrder = "asc"
+      } else {
+        params.sortBy = "moveInDate"
+        params.sortOrder = "desc"
       }
-    })
+    }
 
-    const limit = normalizePositiveInteger(query.limit, DEFAULT_LIMIT)
-    const total = residents.length
-    const totalPages = Math.max(1, Math.ceil(total / limit))
-    const page = Math.min(normalizePositiveInteger(query.page, DEFAULT_PAGE), totalPages)
-    const startIndex = (page - 1) * limit
-
+    const res = await api.get<{ residents: any[]; pagination: any }>("/residents", { params })
     return {
-      items: clone(residents.slice(startIndex, startIndex + limit)),
-      total,
-      page,
-      limit,
-      totalPages,
+      items: res.data.residents.map(mapBackendResidentToFrontend),
+      total: res.data.pagination.total,
+      page: res.data.pagination.page,
+      limit: res.data.pagination.limit,
+      totalPages: res.data.pagination.totalPages,
     }
   },
 
   async getResidentById(id) {
-    await waitForMockResponse()
-    const resident = residentStore[getResidentIndex(id.trim())]
-    return clone(resident)
+    const res = await api.get<{ resident: any; familyMembers: any[] }>(`/residents/${id}`)
+    const details = mapBackendResidentToFrontend(res.data.resident)
+    if (res.data.familyMembers) {
+      details.familyMembers = res.data.familyMembers.map((m: any) => ({
+        id: m._id,
+        residentId: m.residentId,
+        name: m.name,
+        relation: m.relation,
+        gender: m.gender.toLowerCase() as any,
+        dateOfBirth: m.dateOfBirth ? m.dateOfBirth.split("T")[0] : "",
+        mobile: m.mobileNumber,
+        email: m.email,
+        occupation: m.occupation,
+      }))
+    }
+    return details
   },
 
   async createResident(data) {
-    await waitForMockResponse()
-    ensureUniqueContact(data.email, data.mobile)
+    const names = data.fullName.trim().split(/\s+/)
+    const firstName = names.shift() || data.fullName.trim()
+    const lastName = names.join(" ") || "Resident"
 
-    const { tower, flat } = resolveResidence(data.towerId, data.flatNumber, data.floor)
-    const now = new Date().toISOString()
-    const resident: ResidentDetails = {
-      id: `resident-${globalThis.crypto.randomUUID()}`,
-      role: "resident",
-      fullName: data.fullName.trim(),
-      email: data.email.trim().toLocaleLowerCase(),
-      mobile: data.mobile.trim(),
-      dateOfBirth: data.dateOfBirth?.trim() || null,
-      profileImageUrl: data.profileImageUrl?.trim() || null,
-      tower,
-      flat,
-      ownershipType: data.ownershipType,
-      approvalStatus: "pending",
-      accountStatus: "inactive",
-      moveInDate: data.moveInDate,
-      emergencyContact: buildEmergencyContact(data),
-      familyMemberCount: data.familyMemberCount,
-      vehicleCount: data.vehicleCount,
-      notes: data.notes?.trim() ?? "",
-      joinedAt: now,
-      createdAt: now,
-      updatedAt: now,
-      familyMembers: [],
-      vehicles: [],
-      maintenance: {
-        outstandingAmount: 0,
-        currentMonthCharge: 0,
-        totalPaidThisFinancialYear: 0,
-        lastPaymentAmount: null,
-        lastPaymentDate: null,
-        nextDueDate: null,
-      },
-      complaintSummary: { total: 0, open: 0, inProgress: 0, resolved: 0 },
-      visitorHistory: [],
+    let userId = ""
+    try {
+      const usersRes = await api.get<{ users: any[] }>(`/users?search=${data.email}`)
+      const existing = usersRes.data.users.find(u => u.email.toLowerCase() === data.email.toLowerCase())
+      if (existing) {
+        userId = existing.id
+      }
+    } catch {
+      // ignore
     }
 
-    residentStore = [resident, ...residentStore]
+    if (!userId) {
+      const userRes = await api.post<{ user: any }>("/users", {
+        firstName,
+        lastName,
+        email: data.email,
+        phone: data.mobile,
+        role: "Resident",
+      })
+      userId = userRes.data.user.id
+    }
 
-    const { notificationService } = await import("@/features/notifications/services/notification.service")
-    await notificationService.add(
-      "New resident registration",
-      `${data.fullName} registered for Flat ${flat.number} (${tower.name}) and is pending approval.`,
-      "system",
-      `/residents`,
-      "Review resident"
+    const towersRes = await api.get<{ towers: any[] }>("/towers?limit=100")
+    const dbTower = towersRes.data.towers.find((t: any) =>
+      t.towerName.toLowerCase() === data.towerId.toLowerCase() ||
+      t.towerName.toLowerCase() === `tower ${data.towerId.replace("tower-", "")}`.toLowerCase() ||
+      t.towerName.toLowerCase() === data.towerId.replace("-", " ").toLowerCase()
     )
 
-    return clone(resident)
+    if (!dbTower) {
+      throw new Error(`Tower not found for towerId: ${data.towerId}`)
+    }
+
+    const flatsRes = await api.get<{ flats: any[] }>(`/flats?towerId=${dbTower._id}&limit=100`)
+    const dbFlat = flatsRes.data.flats.find((f: any) => f.flatNumber.toLowerCase() === data.flatNumber.toLowerCase())
+
+    if (!dbFlat) {
+      throw new Error(`Flat not found for flatNumber: ${data.flatNumber}`)
+    }
+
+    const residentPayload = {
+      userId,
+      towerId: dbTower._id,
+      flatId: dbFlat._id,
+      ownershipType: data.ownershipType === "owner" ? "Owner" : "Tenant",
+      moveInDate: data.moveInDate,
+      emergencyContact: data.emergencyContactNumber || data.mobile,
+      bloodGroup: null,
+      occupation: "",
+      status: "Active",
+    }
+
+    const res = await api.post<{ resident: any }>("/residents", residentPayload)
+    return mapBackendResidentToFrontend(res.data.resident)
   },
 
   async updateResident(id, data) {
-    await waitForMockResponse()
-    const index = getResidentIndex(id.trim())
-    const current = residentStore[index]
-    const email = data.email?.trim().toLocaleLowerCase() ?? current.email
-    const mobile = data.mobile?.trim() ?? current.mobile
-    ensureUniqueContact(email, mobile, current.id)
+    const updatePayload: any = {}
+    if (data.ownershipType) {
+      updatePayload.ownershipType = data.ownershipType === "owner" ? "Owner" : "Tenant"
+    }
+    if (data.moveInDate) {
+      updatePayload.moveInDate = data.moveInDate
+    }
+    if (data.emergencyContactNumber) {
+      updatePayload.emergencyContact = data.emergencyContactNumber
+    }
 
-    const { tower, flat } = resolveResidence(
-      data.towerId ?? current.tower.id,
-      data.flatNumber ?? current.flat.number,
-      data.floor ?? current.flat.floor,
-    )
+    if (data.towerId && data.flatNumber) {
+      const towersRes = await api.get<{ towers: any[] }>("/towers?limit=100")
+      const dbTower = towersRes.data.towers.find((t: any) =>
+        t.towerName.toLowerCase() === data.towerId!.toLowerCase() ||
+        t.towerName.toLowerCase() === `tower ${data.towerId!.replace("tower-", "")}`.toLowerCase() ||
+        t.towerName.toLowerCase() === data.towerId!.replace("-", " ").toLowerCase()
+      )
+      if (dbTower) {
+        updatePayload.towerId = dbTower._id
+        const flatsRes = await api.get<{ flats: any[] }>(`/flats?towerId=${dbTower._id}&limit=100`)
+        const dbFlat = flatsRes.data.flats.find((f: any) => f.flatNumber.toLowerCase() === data.flatNumber!.toLowerCase())
+        if (dbFlat) {
+          updatePayload.flatId = dbFlat._id
+        }
+      }
+    }
 
-    return replaceResident(index, {
-      ...current,
-      fullName: data.fullName?.trim() ?? current.fullName,
-      email,
-      mobile,
-      dateOfBirth:
-        data.dateOfBirth === undefined ? current.dateOfBirth : data.dateOfBirth.trim() || null,
-      profileImageUrl:
-        data.profileImageUrl === undefined
-          ? current.profileImageUrl
-          : data.profileImageUrl.trim() || null,
-      tower,
-      flat,
-      ownershipType: data.ownershipType ?? current.ownershipType,
-      moveInDate: data.moveInDate ?? current.moveInDate,
-      emergencyContact: buildEmergencyContact(data, current.emergencyContact),
-      familyMemberCount: data.familyMemberCount ?? current.familyMemberCount,
-      vehicleCount: data.vehicleCount ?? current.vehicleCount,
-      notes: data.notes === undefined ? current.notes : data.notes.trim(),
-      updatedAt: new Date().toISOString(),
-    })
+    const res = await api.put<{ resident: any }>(`/residents/${id}`, updatePayload)
+    return mapBackendResidentToFrontend(res.data.resident)
   },
 
   async approveResident(id) {
-    const res = await updateApprovalStatus(id, "pending", "approved")
-
-    const { notificationService } = await import("@/features/notifications/services/notification.service")
-    await notificationService.add(
-      "Resident approved",
-      `The registration request for ${res.fullName} (Flat ${res.flat.number}) has been approved.`,
-      "system",
-      `/residents`,
-      "View resident"
-    )
-
-    return res
+    const res = await api.patch<{ resident: any }>(`/residents/${id}/status`, { status: "Active" })
+    return mapBackendResidentToFrontend(res.data.resident)
   },
-  rejectResident: (id) => updateApprovalStatus(id, "pending", "rejected"),
-  activateResident: (id) => updateAccountStatus(id, ["inactive"], "active"),
-  deactivateResident: (id) => updateAccountStatus(id, ["active"], "inactive"),
-  blockResident: (id) => updateAccountStatus(id, ["active", "inactive"], "blocked"),
-  unblockResident: (id) => updateAccountStatus(id, ["blocked"], "active"),
+
+  async rejectResident(id) {
+    const res = await api.patch<{ resident: any }>(`/residents/${id}/status`, { status: "Inactive" })
+    return mapBackendResidentToFrontend(res.data.resident)
+  },
+
+  async activateResident(id) {
+    const details = await this.getResidentById(id)
+    const usersRes = await api.get<{ users: any[] }>(`/users?search=${details.email}`)
+    const user = usersRes.data.users.find(u => u.email.toLowerCase() === details.email.toLowerCase())
+    if (user) {
+      await api.patch(`/users/${user.id}/status`, { isActive: true })
+    }
+    const res = await api.patch<{ resident: any }>(`/residents/${id}/status`, { status: "Active" })
+    return mapBackendResidentToFrontend(res.data.resident)
+  },
+
+  async deactivateResident(id) {
+    const details = await this.getResidentById(id)
+    const usersRes = await api.get<{ users: any[] }>(`/users?search=${details.email}`)
+    const user = usersRes.data.users.find(u => u.email.toLowerCase() === details.email.toLowerCase())
+    if (user) {
+      await api.patch(`/users/${user.id}/status`, { isActive: false })
+    }
+    const res = await api.patch<{ resident: any }>(`/residents/${id}/status`, { status: "Inactive" })
+    return mapBackendResidentToFrontend(res.data.resident)
+  },
+
+  async blockResident(id) {
+    const details = await this.getResidentById(id)
+    const usersRes = await api.get<{ users: any[] }>(`/users?search=${details.email}`)
+    const user = usersRes.data.users.find(u => u.email.toLowerCase() === details.email.toLowerCase())
+    if (user) {
+      await api.patch(`/users/${user.id}/status`, { isActive: false })
+    }
+    const res = await api.patch<{ resident: any }>(`/residents/${id}/status`, { status: "Inactive" })
+    return mapBackendResidentToFrontend(res.data.resident)
+  },
+
+  async unblockResident(id) {
+    const details = await this.getResidentById(id)
+    const usersRes = await api.get<{ users: any[] }>(`/users?search=${details.email}`)
+    const user = usersRes.data.users.find(u => u.email.toLowerCase() === details.email.toLowerCase())
+    if (user) {
+      await api.patch(`/users/${user.id}/status`, { isActive: true })
+    }
+    const res = await api.patch<{ resident: any }>(`/residents/${id}/status`, { status: "Active" })
+    return mapBackendResidentToFrontend(res.data.resident)
+  },
+
   async promoteResidentRole(id) {
-    await waitForMockResponse()
-    const index = getResidentIndex(id)
-    const resident = residentStore[index]
+    const details = await this.getResidentById(id)
+    const usersRes = await api.get<{ users: any[] }>(`/users?search=${details.email}`)
+    const user = usersRes.data.users.find(u => u.email.toLowerCase() === details.email.toLowerCase())
+    if (!user) throw new Error("User not found")
 
-    const updated = {
-      ...resident,
-      role: "committee_member" as unknown as "resident",
-      updatedAt: new Date().toISOString(),
+    await api.put(`/users/${user.id}`, { role: "Committee Member" })
+
+    const now = new Date().toISOString().split("T")[0]
+    await api.post("/committee-members", {
+      userId: user.id,
+      department: "Administration",
+      designation: "Committee Member",
+      joiningDate: now,
+      responsibilities: ["Manage Residents"],
+      permissions: [],
+      status: "Active",
+    })
+
+    return {
+      ...details,
+      role: "committee_member" as any,
     }
-    residentStore[index] = updated
-
-    const { committeeMemberService } = await import("@/features/committee-members/services/committee-member.service")
-    await committeeMemberService.promoteCommitteeMemberByResident(resident)
-
-    return clone(updated)
   },
+
   async demoteResidentRoleByEmail(email) {
-    const emailNormalized = normalizeText(email)
-    const index = residentStore.findIndex((r) => normalizeText(r.email) === emailNormalized)
-    if (index >= 0) {
-      residentStore[index] = {
-        ...residentStore[index],
-        role: "resident",
-        updatedAt: new Date().toISOString(),
-      }
+    const usersRes = await api.get<{ users: any[] }>(`/users?search=${email}`)
+    const user = usersRes.data.users.find(u => u.email.toLowerCase() === email.toLowerCase())
+    if (user) {
+      await api.put(`/users/${user.id}`, { role: "Resident" })
     }
   },
+
   async removeResident(id) {
-    await waitForMockResponse()
-    const index = getResidentIndex(id)
-    const resident = residentStore[index]
-    residentStore.splice(index, 1)
-    return clone(resident)
+    const details = await this.getResidentById(id)
+    await api.delete(`/residents/${id}`)
+    return details
   },
 }
