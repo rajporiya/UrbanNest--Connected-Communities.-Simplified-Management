@@ -22,7 +22,6 @@ function mapBackendVisitorToFrontend(v: any): VisitorPass {
     status: v.status,
     qrCode: v.qrCode,
     vehicleNumber: v.vehicleNumber || undefined,
-    remarks: v.remarks || undefined,
     checkedInAt: v.checkedInAt || undefined,
     checkedOutAt: v.checkedOutAt || undefined,
     verifiedBy: v.verifiedBy || undefined,

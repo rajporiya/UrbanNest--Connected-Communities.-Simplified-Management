@@ -22,8 +22,17 @@ export const notificationService = {
     items = items.slice((page - 1) * limit, page * limit)
     return { items: clone(items), total, unread: store.filter((item) => !item.read).length, page, limit, totalPages }
   },
-  async markRead(id: string): Promise<AppNotification> { await wait(); const index = indexOf(id); store[index] = { ...store[index], read: true }; return clone(store[index]) },
-  async markAllRead(): Promise<void> { await wait(); store = store.map((item) => ({ ...item, read: true })) },
+  async markRead(id: string): Promise<AppNotification> { 
+    await wait()
+    const index = indexOf(id)
+    const item = clone(store[index])
+    store.splice(index, 1)
+    return item
+  },
+  async markAllRead(): Promise<void> { 
+    await wait()
+    store = []
+  },
   async remove(id: string): Promise<string> { await wait(); store.splice(indexOf(id), 1); return id },
   async add(
     title: string,
