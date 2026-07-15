@@ -1,6 +1,5 @@
 import axios, { type AxiosError, type AxiosRequestConfig } from "axios"
 import { toast } from "sonner"
-import { store } from "@/app/store"
 import { appConfig } from "@/config/app.config"
 import type { ApiErrorResponse, ApiResponse } from "@/types/api.types"
 
@@ -31,7 +30,10 @@ export const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 })
 
-apiClient.interceptors.request.use((config) => {
+apiClient.interceptors.request.use(async (config) => {
+  // Loading the store only when a request is made avoids a module cycle:
+  // store -> auth reducer -> auth service -> api client -> store.
+  const { store } = await import("@/app/store")
   const accessToken = store.getState().auth.accessToken
   if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`
   return config

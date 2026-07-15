@@ -1,5 +1,7 @@
-import { mockAuthUsers } from "@/features/auth/data/mock-auth-users"
-import type { ForgotPasswordRequest, LoginRequest, LoginResponse, RegisterResidentRequest, ResetPasswordRequest } from "@/features/auth/types/auth.types"
+import { api } from "@/services/api-client"
+import { API_ENDPOINTS } from "@/services/api-endpoints"
+import type { AuthUser, ForgotPasswordRequest, LoginRequest, LoginResponse, RegisterResidentRequest, ResetPasswordRequest } from "@/features/auth/types/auth.types"
+import type { UserRole } from "@/constants/roles.constants"
 
 export class AuthServiceError extends Error {
   readonly code: "INVALID_CREDENTIALS" | "INVALID_TOKEN" | "EXPIRED_TOKEN"
@@ -8,19 +10,67 @@ export class AuthServiceError extends Error {
 
 const wait = () => new Promise((resolve) => setTimeout(resolve, 500))
 
+type ApiUser = {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  role: string
+  profileImage?: { secure_url?: string } | null
+}
+
+type ApiLoginResponse = { user: ApiUser; accessToken: string; refreshToken: string }
+
+const roleMap: Record<string, UserRole> = {
+  "Committee Head": "committee_head",
+  "Committee Member": "committee_member",
+  Resident: "resident",
+  "Security Guard": "security_guard",
+}
+
+function toAuthUser(user: ApiUser): AuthUser {
+  return {
+    id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    role: roleMap[user.role] ?? "resident",
+    avatar: user.profileImage?.secure_url || null,
+  }
+}
+
+function registrationPayload(request: RegisterResidentRequest) {
+  const names = request.fullName.trim().split(/\s+/)
+  const firstName = names.shift() || request.fullName.trim()
+  const lastName = names.join(" ") || "Resident"
+
+  return {
+    firstName,
+    lastName,
+    email: request.email,
+    phone: request.mobile,
+    password: request.password,
+    confirmPassword: request.confirmPassword,
+    role: "Resident",
+    tower: request.tower,
+    flat: request.flatNumber,
+  }
+}
+
 export const authService = {
   async login(request: LoginRequest): Promise<LoginResponse> {
-    await wait()
-    const match = mockAuthUsers.find((user) => user.email.toLowerCase() === request.email.toLowerCase() && user.password === request.password)
-    if (!match) throw new AuthServiceError("INVALID_CREDENTIALS")
-    const { password: _password, ...user } = match
-    void _password
-    return { user, accessToken: `mock-token-${user.id}` }
+    const response = await api.post<ApiLoginResponse, Pick<LoginRequest, "email" | "password">>(
+      API_ENDPOINTS.auth.login,
+      { email: request.email, password: request.password },
+    )
+    return { user: toAuthUser(response.data.user), accessToken: response.data.accessToken }
   },
   async registerResident(request: RegisterResidentRequest): Promise<{ message: string }> {
-    void request
-    await wait()
-    return { message: "Registration submitted for committee approval." }
+    const response = await api.post<{ user: ApiUser }, ReturnType<typeof registrationPayload>>(
+      API_ENDPOINTS.auth.register,
+      registrationPayload(request),
+    )
+    return { message: response.message }
   },
   async forgotPassword(request: ForgotPasswordRequest): Promise<{ message: string }> {
     void request

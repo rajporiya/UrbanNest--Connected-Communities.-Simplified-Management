@@ -1,5 +1,5 @@
 export const API_ENDPOINTS = {
-  auth: { login: "/auth/login", refresh: "/auth/refresh-token", logout: "/auth/logout" },
+  auth: { register: "/auth/register", login: "/auth/login", refresh: "/auth/refresh-token", logout: "/auth/logout" },
   profile: "/users/profile",
   residents: "/residents",
   towers: "/towers",
