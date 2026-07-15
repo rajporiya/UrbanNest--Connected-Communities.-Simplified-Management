@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react"
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 
 import { LoadingState } from "@/components/feedback/loading-state"
 import { ROLES, type UserRole } from "@/constants/roles.constants"
@@ -12,7 +12,6 @@ import { PublicRoute } from "@/routes/public-route"
 import { RoleRoute } from "@/routes/role-route"
 
 const DashboardPage = lazy(() => import("@/features/dashboard/pages/dashboard-page").then((module) => ({ default: module.DashboardPage })))
-const HomePage = lazy(() => import("@/features/dashboard/home-page").then((module) => ({ default: module.HomePage })))
 const ForbiddenPage = lazy(() => import("@/pages/forbidden-page").then((module) => ({ default: module.ForbiddenPage })))
 const NotFoundPage = lazy(() => import("@/pages/not-found-page").then((module) => ({ default: module.NotFoundPage })))
 const ServerErrorPage = lazy(() => import("@/pages/server-error-page").then((module) => ({ default: module.ServerErrorPage })))
@@ -106,7 +105,7 @@ export function AppRouter() {
     <BrowserRouter>
       <Suspense fallback={<LoadingState fullScreen label="Loading page..." />}>
         <Routes>
-          <Route element={<PublicLayout />}><Route path={ROUTES.HOME} element={<HomePage />} /></Route>
+          <Route element={<PublicLayout />}><Route path={ROUTES.HOME} element={<Navigate to={ROUTES.LOGIN} replace />} /></Route>
           <Route element={<PublicRoute />}><Route element={<AuthLayout />}>
             <Route path={ROUTES.LOGIN} element={<LoginPage />} />
             <Route path={ROUTES.REGISTER} element={<RegisterPage />} />

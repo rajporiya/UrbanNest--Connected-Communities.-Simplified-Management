@@ -141,6 +141,11 @@
       linear-gradient(180deg, hsl(0 0% 100% / 0.78), hsl(0 0% 100% / 0.9));
   }
 
+  :where(input, textarea, select)::placeholder {
+    color: var(--color-muted-foreground);
+    opacity: 1;
+  }
+
   .dark body {
     background-image:
       radial-gradient(circle at top left, hsl(195 90% 55% / 0.16), transparent 32%),
