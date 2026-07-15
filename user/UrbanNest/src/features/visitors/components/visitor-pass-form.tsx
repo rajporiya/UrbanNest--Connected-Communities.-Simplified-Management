@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { CalendarDays, Clock3, LoaderCircle, UserRound } from "lucide-react"
+import { CalendarDays, Clock3, LoaderCircle, UserRound, Home } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { FormActions } from "@/components/forms/form-actions"
 import { FormSection } from "@/components/forms/form-section"
@@ -23,6 +23,7 @@ function ErrorText({ message }: { message?: string }) {
 export interface VisitorPassFormProps {
   initialValues: VisitorPassFormValues
   submitting?: boolean
+  isGuard?: boolean
   onSubmit: (values: VisitorPassFormValues) => void | Promise<void>
   onCancel: () => void
 }
@@ -30,6 +31,7 @@ export interface VisitorPassFormProps {
 export function VisitorPassForm({
   initialValues,
   submitting = false,
+  isGuard = false,
   onSubmit,
   onCancel,
 }: VisitorPassFormProps) {
@@ -44,6 +46,44 @@ export function VisitorPassForm({
       noValidate
       onSubmit={form.handleSubmit(onSubmit)}
     >
+      {isGuard && (
+        <FormSection
+          title="Resident & flat details"
+          description="Enter details of the resident being visited."
+          icon={<Home />}
+          columns={3}
+          divider
+        >
+          <label className="space-y-1.5">
+            <RequiredLabel required>Resident name</RequiredLabel>
+            <input
+              className={control}
+              placeholder="e.g. Rajesh Sharma"
+              {...form.register("residentName")}
+            />
+            <ErrorText message={errors.residentName?.message} />
+          </label>
+          <label className="space-y-1.5">
+            <RequiredLabel required>Tower</RequiredLabel>
+            <input
+              className={control}
+              placeholder="e.g. Tower A"
+              {...form.register("tower")}
+            />
+            <ErrorText message={errors.tower?.message} />
+          </label>
+          <label className="space-y-1.5">
+            <RequiredLabel required>Flat number</RequiredLabel>
+            <input
+              className={control}
+              placeholder="e.g. A-101"
+              {...form.register("flatNumber")}
+            />
+            <ErrorText message={errors.flatNumber?.message} />
+          </label>
+        </FormSection>
+      )}
+
       <FormSection
         title="Visitor information"
         description="Enter the visitor's identity and reason for entry."

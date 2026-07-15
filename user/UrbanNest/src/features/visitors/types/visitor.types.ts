@@ -34,6 +34,9 @@ export interface VisitorPassInput {
   validFrom: string
   validUntil: string
   vehicleNumber?: string
+  residentName?: string
+  tower?: string
+  flatNumber?: string
 }
 
 export interface VisitorListQuery {

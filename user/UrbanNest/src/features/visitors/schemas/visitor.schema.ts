@@ -15,6 +15,9 @@ export const visitorPassSchema = z
     validFrom: z.string().regex(timePattern, "Start time is required"),
     validUntil: z.string().regex(timePattern, "End time is required"),
     vehicleNumber: z.string().trim().max(20).optional(),
+    residentName: z.string().trim().optional(),
+    tower: z.string().trim().optional(),
+    flatNumber: z.string().trim().optional(),
   })
   .refine((value) => value.validUntil > value.validFrom, {
     path: ["validUntil"],
@@ -32,4 +35,7 @@ export const visitorPassDefaultValues: VisitorPassFormValues = {
   validFrom: "09:00",
   validUntil: "18:00",
   vehicleNumber: "",
+  residentName: "",
+  tower: "",
+  flatNumber: "",
 }

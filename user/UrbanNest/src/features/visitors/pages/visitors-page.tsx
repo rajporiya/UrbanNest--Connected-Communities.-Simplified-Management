@@ -150,10 +150,16 @@ export function VisitorsPage() {
     )
   if (user?.role === ROLES.SECURITY_GUARD)
     actions = (
-      <Button render={<Link to={`${ROUTES.VISITORS}/verify`} />}>
-        <ScanLine />
-        Verify pass
-      </Button>
+      <div className="flex gap-2">
+        <Button render={<Link to={`${ROUTES.VISITORS}/verify`} />}>
+          <ScanLine />
+          Verify pass
+        </Button>
+        <Button render={<Link to={`${ROUTES.VISITORS}/new`} />}>
+          <Plus />
+          Add manually
+        </Button>
+      </div>
     )
   return (
     <div className="space-y-6">

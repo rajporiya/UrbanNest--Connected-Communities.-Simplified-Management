@@ -14,6 +14,8 @@ import { createVisitorPass } from "@/features/visitors/store/visitors.slice"
 import type { VisitorsState } from "@/features/visitors/store/visitors.slice"
 import type { AuthState } from "@/features/auth/store/auth.slice"
 import { useAppDispatch } from "@/hooks/use-app-dispatch"
+import { ROLES } from "@/constants/roles.constants"
+
 interface State {
   visitors: VisitorsState
   auth: AuthState
@@ -23,15 +25,17 @@ export function CreateVisitorPassPage() {
   const navigate = useNavigate()
   const mutating = useSelector((state: State) => state.visitors.mutating)
   const user = useSelector((state: State) => state.auth.user)
+  const isGuard = user?.role === ROLES.SECURITY_GUARD
+
   const submit = async (values: VisitorPassFormValues) => {
     const pass = await dispatch(
       createVisitorPass({
         input: values,
         resident: {
-          id: user?.id ?? "mock-resident",
-          name: user ? `${user.firstName} ${user.lastName}` : "Resident",
-          tower: "Tower A",
-          flatNumber: "A-1204",
+          id: isGuard ? "mock-resident" : (user?.id ?? "mock-resident"),
+          name: isGuard ? (values.residentName || "Resident") : (user ? `${user.firstName} ${user.lastName}` : "Resident"),
+          tower: isGuard ? (values.tower || "Tower A") : "Tower A",
+          flatNumber: isGuard ? (values.flatNumber || "A-1204") : "A-1204",
         },
       })
     ).unwrap()
@@ -49,6 +53,7 @@ export function CreateVisitorPassPage() {
         <VisitorPassForm
           initialValues={visitorPassDefaultValues}
           submitting={mutating}
+          isGuard={isGuard}
           onSubmit={submit}
           onCancel={() => navigate(ROUTES.VISITORS)}
         />

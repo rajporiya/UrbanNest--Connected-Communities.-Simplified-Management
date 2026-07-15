@@ -19,8 +19,9 @@ export function QrPreview({
 
   useEffect(() => {
     let active = true
+    const qrUrl = value.startsWith("http") ? value : `${window.location.origin}/visitors/verify?code=${value}`
 
-    void QRCode.toDataURL(value, {
+    void QRCode.toDataURL(qrUrl, {
       errorCorrectionLevel: "M",
       margin: 2,
       width: 352,

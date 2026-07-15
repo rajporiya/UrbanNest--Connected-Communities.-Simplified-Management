@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Camera, ScanLine } from "lucide-react"
 import { useSelector } from "react-redux"
+import { useSearchParams } from "react-router-dom"
 
 import { ContentCard } from "@/components/common/content-card"
 import { PageHeader } from "@/components/layout/page-header"
@@ -33,6 +34,8 @@ function getBarcodeDetector() {
 
 export function VerifyVisitorPage() {
   const dispatch = useAppDispatch()
+  const [searchParams] = useSearchParams()
+  const urlCode = searchParams.get("code")
   const { selected, mutating, error } = useSelector(
     (state: State) => state.visitors
   )
@@ -43,6 +46,13 @@ export function VerifyVisitorPage() {
   const streamRef = useRef<MediaStream | null>(null)
   const timerRef = useRef<number | null>(null)
   const scanningRef = useRef(false)
+
+  useEffect(() => {
+    if (urlCode) {
+      setCode(urlCode)
+      void dispatch(verifyVisitorPass(urlCode))
+    }
+  }, [urlCode, dispatch])
 
   const stopCamera = useCallback(() => {
     if (timerRef.current !== null) window.clearInterval(timerRef.current)

@@ -8,6 +8,7 @@ import flatRoutes from "./flat.routes.js"
 import residentRoutes from "./resident.routes.js"
 import committeeMemberRoutes from "./committee-member.routes.js"
 import securityGuardRoutes from "./security-guard.routes.js"
+import visitorRoutes from "./visitor.routes.js"
 
 const router = express.Router()
 
@@ -19,5 +20,6 @@ router.use("/flats", flatRoutes)
 router.use("/residents", residentRoutes)
 router.use("/committee-members", committeeMemberRoutes)
 router.use("/security-guards", securityGuardRoutes)
+router.use("/visitors", visitorRoutes)
 
 export default router
