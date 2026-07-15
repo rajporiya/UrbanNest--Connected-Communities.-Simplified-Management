@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+
+# Authenticated Committee Head and Committee Member areas.
+Disallow: /dashboard
+Disallow: /residents
+Disallow: /committee-members
+Disallow: /security-guards
+Disallow: /towers
+Disallow: /flats
+Disallow: /reports
+Disallow: /audit-logs
+Disallow: /complaints/assigned
+Disallow: /bookings/assigned
+Disallow: /maintenance
+Disallow: /payments
+
+# Account-specific and operational pages.
+Disallow: /profile
+Disallow: /settings
+Disallow: /notifications
+Disallow: /visitor-passes
+Disallow: /visitors
+Disallow: /amenities
+Disallow: /parcels
+Disallow: /emergency
+
+Sitemap: https://urbannest.example/sitemap.xml
