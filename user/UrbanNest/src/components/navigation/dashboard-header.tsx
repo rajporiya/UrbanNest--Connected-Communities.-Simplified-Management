@@ -69,9 +69,8 @@ export function DashboardHeader({ title = "Dashboard", breadcrumbs, onOpenMobile
 
       {user ? (
         <Menu.Root>
-          <Menu.Trigger render={<Button type="button" variant="ghost" className="h-10 min-w-0 gap-2 px-1.5 normal-case" aria-label="Open user menu" />}>
-            <UserAvatar name={name} size="sm" />
-            <span className="hidden max-w-28 truncate text-sm font-medium sm:block">{name}</span>
+          <Menu.Trigger render={<Button type="button" variant="ghost" size="icon" className="rounded-full" aria-label="Open user menu" />}>
+            <UserAvatar name={name} size="md" />
           </Menu.Trigger>
           <Menu.Portal>
             <Menu.Positioner sideOffset={8} align="end" className="z-50 outline-none">
