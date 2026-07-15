@@ -9,7 +9,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <ReduxProvider>
       <ThemeProvider defaultTheme="light" storageKey={THEME_STORAGE_KEY}>
         {children}
-        <Toaster richColors closeButton position="top-right" />
+        <Toaster richColors closeButton position="top-right" duration={2000} />
       </ThemeProvider>
     </ReduxProvider>
   )
