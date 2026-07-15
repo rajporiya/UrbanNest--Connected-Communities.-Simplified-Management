@@ -79,7 +79,7 @@ function isEditableTarget(target: EventTarget | null) {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "light",
   storageKey = "urbannest-theme",
   disableTransitionOnChange = true,
   ...props

@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/providers/theme-provider"
 export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <ReduxProvider>
-      <ThemeProvider defaultTheme="system" storageKey={THEME_STORAGE_KEY}>
+      <ThemeProvider defaultTheme="light" storageKey={THEME_STORAGE_KEY}>
         {children}
         <Toaster richColors closeButton position="top-right" />
       </ThemeProvider>

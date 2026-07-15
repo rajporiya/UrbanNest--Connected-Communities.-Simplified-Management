@@ -11,7 +11,7 @@ export type ApplicationState = {
 export const initialApplicationState: ApplicationState = {
   sidebarCollapsed: false,
   mobileSidebarOpen: false,
-  theme: "system",
+  theme: "light",
   globalLoading: false,
 }
 
