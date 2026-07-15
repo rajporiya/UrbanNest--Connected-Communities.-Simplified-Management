@@ -129,6 +129,12 @@
     @apply min-h-full;
   }
 
+  body:has(#main-content) {
+    overflow: hidden;
+    height: 100vh;
+    height: 100svh;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }

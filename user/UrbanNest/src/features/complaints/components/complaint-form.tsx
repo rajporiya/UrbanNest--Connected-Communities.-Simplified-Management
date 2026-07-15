@@ -121,7 +121,7 @@ export function ComplaintForm({
         description="Upload up to five JPG, PNG or WebP images (5 MB each)."
         icon={<ImagePlus />}
       >
-        <label className="flex cursor-pointer flex-col items-center rounded-xl border border-dashed p-6 text-center transition-colors hover:bg-muted/50">
+        <label className="relative flex cursor-pointer flex-col items-center rounded-xl border border-dashed p-6 text-center transition-colors hover:bg-muted/50">
           <ImagePlus className="mb-2 size-6 text-primary" />
           <span className="font-medium">Add complaint images</span>
           <span className="text-xs text-muted-foreground">

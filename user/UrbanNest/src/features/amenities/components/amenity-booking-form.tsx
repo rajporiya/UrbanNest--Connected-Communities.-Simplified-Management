@@ -113,7 +113,7 @@ export function AmenityBookingForm({
             <label
               key={slot.id}
               className={cn(
-                "cursor-pointer rounded-xl border p-4 transition-colors hover:bg-muted/50",
+                "relative cursor-pointer rounded-xl border p-4 transition-colors hover:bg-muted/50",
                 selectedSlotId === slot.id &&
                   "border-primary bg-primary/5 ring-1 ring-primary"
               )}
