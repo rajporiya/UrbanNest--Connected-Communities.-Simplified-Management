@@ -1,223 +1,801 @@
-# UrbanNest — Connected Communities, Simplified Management
+<div align="center">
 
-A full-stack society/community management platform that connects residents, committee members, and security staff on one system — handling flats, residents, complaints, visitors, amenities, payments, and more.
+# 🏢 UrbanNest
 
-## Tech Stack
+### Connected Communities. Simplified Management.
 
-### Frontend (`user/UrbanNest`)
+A modern full-stack Society & Community Management Platform built using the MERN stack.
 
-| Category | Technology |
-|----------|------------|
-| **Framework** | React 19 + TypeScript |
-| **Build Tool** | Vite |
-| **Routing** | React Router v7 |
-| **State Management** | Redux Toolkit + Redux Persist |
-| **UI Components** | Base UI + custom `ui/` primitives |
-| **Styling** | Tailwind CSS v4 |
-| **Forms** | React Hook Form + Zod |
-| **HTTP Client** | Axios |
-| **Icons** | Lucide React |
-| **Notifications** | Sonner |
-| **Charts** | Recharts |
-| **Animation** | Framer Motion |
-| **Fonts** | Fontsource (Noto Sans, Playfair Display) |
-| **Linting/Formatting** | ESLint + Prettier |
+Manage residents, flats, towers, maintenance, complaints, visitors, payments, security, events, announcements, and society operations from one unified dashboard.
 
-### Backend (`server`)
+---
 
-| Category | Technology |
-|----------|------------|
-| **Runtime** | Node.js (ESM) |
-| **Framework** | Express 5 |
-| **Database** | MongoDB + Mongoose |
-| **Authentication** | JWT (access + refresh tokens), bcrypt |
-| **Validation** | express-validator |
-| **File Uploads** | Multer + Cloudinary |
-| **Email** | Resend |
-| **Payments** | Razorpay |
-| **PDF/QR** | pdfkit, qrcode |
-| **Scheduling** | node-cron |
-| **Security** | Helmet, CORS, express-rate-limit |
-| **Logging** | Morgan |
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)
+![Node.js](https://img.shields.io/badge/Node.js-Express-green?logo=node.js)
+![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-success?logo=mongodb)
+![TailwindCSS](https://img.shields.io/badge/Tailwind-v4-38BDF8?logo=tailwindcss)
+![Redux](https://img.shields.io/badge/Redux-Toolkit-764ABC?logo=redux)
 
-## Project Structure
+</div>
 
-```
-UrbanNest/
-├── server/                        # Express + MongoDB API
-│   ├── config/                    # DB, auth, roles, cloudinary config
-│   ├── controllers/                # Route handlers
-│   ├── middleware/                 # Auth, roles, validation, error handling
-│   ├── models/                     # Mongoose schemas (User, Flat, Tower, Resident, ...)
-│   ├── routes/                     # Express routers (mounted in routes/index.js)
-│   ├── services/                   # Business logic layer
-│   ├── validators/                 # express-validator request schemas
-│   ├── utils/                      # Helpers (JWT, password, response, errors)
-│   ├── uploads/                    # Local upload storage
-│   ├── app.js                      # Express app setup
-│   └── server.js                   # Entry point
+---
+
+# 📖 About UrbanNest
+
+UrbanNest is a complete Society Management System designed to simplify everyday operations of residential communities.
+
+It enables Committee Heads, Committee Members, Residents, and Security Guards to collaborate through one centralized platform.
+
+The platform digitizes society management by handling everything from resident onboarding and visitor approvals to complaints, maintenance payments, announcements, security operations, and reports.
+
+---
+
+# ✨ Core Features
+
+## 👥 Resident Management
+
+* Resident Registration
+* Resident Directory
+* Resident Profile
+* Family Members
+* Occupancy Management
+* Resident Status
+* Resident Documents
+
+---
+
+## 🏢 Tower & Flat Management
+
+* Tower Management
+* Flat Management
+* Floor Mapping
+* Flat Allocation
+* Occupancy Status
+* Ownership Records
+
+---
+
+## 🛡 Security Management
+
+* Security Guard Management
+* Visitor Approval
+* Visitor History
+* Delivery Entry
+* Parcel Management
+* Gate Management
+* Shift Assignment
+
+---
+
+## 📢 Community Communication
+
+* Announcements
+* Events
+* Emergency Contacts
+* Notifications
+* Community Polls
+* Notice Board
+
+---
+
+## 💰 Finance
+
+* Maintenance Bills
+* Online Payments
+* Razorpay Integration
+* Payment History
+* Receipts
+* Financial Reports
+
+---
+
+## 🛠 Maintenance
+
+* Complaint Management
+* Complaint Tracking
+* Complaint Categories
+* Service Requests
+* Maintenance Logs
+
+---
+
+## 🚗 Parking
+
+* Parking Allocation
+* Vehicle Management
+* Visitor Parking
+* Parking Reports
+
+---
+
+## 📊 Dashboard
+
+* Society Overview
+* Revenue Analytics
+* Complaint Analytics
+* Resident Statistics
+* Visitor Statistics
+* Payment Analytics
+
+---
+
+# 👤 User Roles
+
+| Role             | Permissions                |
+| ---------------- | -------------------------- |
+| Committee Head   | Full System Access         |
+| Committee Member | Society Operations         |
+| Resident         | Personal Dashboard         |
+| Security Guard   | Visitor & Entry Management |
+
+Role-based authorization is enforced on both the frontend and backend.
+
+---
+
+# 🧰 Tech Stack
+
+## Frontend
+
+| Technology      | Usage            |
+| --------------- | ---------------- |
+| React 19        | UI Framework     |
+| TypeScript      | Type Safety      |
+| Vite            | Build Tool       |
+| React Router v7 | Routing          |
+| Redux Toolkit   | State Management |
+| Redux Persist   | Persistence      |
+| Tailwind CSS v4 | Styling          |
+| React Hook Form | Forms            |
+| Zod             | Validation       |
+| Axios           | API Client       |
+| Sonner          | Notifications    |
+| Recharts        | Charts           |
+| Framer Motion   | Animations       |
+
+---
+
+## Backend
+
+| Technology | Usage            |
+| ---------- | ---------------- |
+| Node.js    | Runtime          |
+| Express 5  | REST API         |
+| MongoDB    | Database         |
+| Mongoose   | ODM              |
+| JWT        | Authentication   |
+| bcrypt     | Password Hashing |
+| Multer     | Uploads          |
+| Cloudinary | Image Storage    |
+| Resend     | Email Service    |
+| Razorpay   | Payments         |
+| PDFKit     | PDF Generation   |
+| QRCode     | QR Generation    |
+| node-cron  | Scheduling       |
+| Helmet     | Security         |
+| Morgan     | Logging          |
+
+---
+
+# 📂 Project Structure
+
+```text
+UrbanNest
 │
-└── user/UrbanNest/                # React + TypeScript frontend
-    ├── src/
-    │   ├── app/                    # Redux store, root reducer, browser storage
-    │   ├── components/             # Shared UI (common, forms, layout, navigation, table, ui)
-    │   ├── config/                 # App, badge, navigation, roles config
-    │   ├── constants/               # App/roles/routes constants
-    │   ├── features/                # Feature modules (see below)
-    │   ├── hooks/                   # Shared hooks (debounce, media query, redux)
-    │   ├── layouts/                 # Auth / Dashboard / Public layouts
-    │   ├── pages/                   # Error pages (403, 404, 500)
-    │   ├── providers/               # App, Redux, Theme providers
-    │   ├── routes/                  # App router, protected/public/role routes
-    │   ├── services/                # API client, endpoints, storage service
-    │   ├── styles/                  # Global CSS (Tailwind)
-    │   ├── types/                   # Shared TypeScript types
-    │   └── utils/                   # Formatting & permission helpers
-    └── public/
+├── server
+│   ├── config
+│   ├── controllers
+│   ├── middleware
+│   ├── models
+│   ├── routes
+│   ├── services
+│   ├── validators
+│   ├── utils
+│   ├── uploads
+│   ├── app.js
+│   └── server.js
+│
+└── user
+    └── UrbanNest
+        ├── public
+        │   ├── robots.txt
+        │   └── sitemap.xml
+        │
+        └── src
+            ├── app
+            ├── components
+            ├── config
+            ├── constants
+            ├── features
+            ├── hooks
+            ├── layouts
+            ├── pages
+            ├── providers
+            ├── routes
+            ├── services
+            ├── styles
+            ├── types
+            └── utils
 ```
 
-### Feature Modules (`src/features/`)
+---
 
-`amenities` · `announcements` · `audit-logs` · `auth` · `committee-members` · `complaints` · `dashboard` · `documents` · `emergency` · `events` · `flats` · `global-search` · `maintenance` · `notifications` · `parcels` · `parking` · `payments` · `polls` · `profile` · `reports` · `residents` · `security-guards` · `settings` · `towers` · `visitors`
+# 📦 Feature Modules
 
-## User Roles
+```text
+auth
+dashboard
+profile
+residents
+committee-members
+security-guards
+towers
+flats
+maintenance
+complaints
+visitors
+parking
+payments
+events
+announcements
+notifications
+documents
+reports
+audit-logs
+amenities
+emergency
+polls
+settings
+global-search
+parcels
+```
 
-Defined in `server/config/roles.js`:
+---
 
-- **Committee Head**
-- **Committee Member**
-- **Resident** *(default role)*
-- **Security Guard**
+# 🔐 Authentication
 
-Role-based access is enforced on both the API (`middleware/role.middleware.js`, `authorize.js`) and the frontend (`routes/role-route.tsx`, `utils/permissions.ts`).
+* JWT Authentication
+* Access and Refresh Tokens
+* Password Hashing
+* Email Verification
+* Password Reset
+* Protected Routes
+* Role-Based Authorization
+* Persisted Authentication State
 
-## API Routes
+---
 
-Mounted under `/api` (see `server/routes/index.js`):
+# 🌐 REST API
 
-| Base Path | Purpose |
-|-----------|---------|
-| `/health` | Health check |
-| `/auth` | Login, register, refresh token, email verification, password reset |
-| `/users` | User account management |
-| `/towers` | Tower/building management |
-| `/flats` | Flat/unit management |
-| `/residents` | Resident management & assignments |
-| `/committee-members` | Committee member management |
-| `/security-guards` | Security guard management |
+All backend routes are mounted under `/api`.
 
-## Getting Started
+```text
+/api/health
 
-### Prerequisites
+/api/auth
 
-- Node.js 18+
-- MongoDB (local instance or Atlas connection string)
-- npm (or your preferred package manager)
+/api/users
 
-### 1. Backend Setup
+/api/towers
+
+/api/flats
+
+/api/residents
+
+/api/committee-members
+
+/api/security-guards
+```
+
+---
+
+# ⚡ Installation
+
+## Clone Repository
+
+```bash
+git clone https://github.com/yourusername/UrbanNest.git
+
+cd UrbanNest
+```
+
+Replace `yourusername` with your actual GitHub username or organization name.
+
+---
+
+## Backend Setup
 
 ```bash
 cd server
-npm install
 
-# Copy and configure environment variables
+npm install
+```
+
+Copy the example environment file:
+
+```bash
 cp .env.example .env
 ```
 
-Configure `server/.env`:
-
-```env
-PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/urban-nest
-CLIENT_URL=http://localhost:5173
-API_URL=http://localhost:5000/api
-RESEND_API_KEY=your_resend_api_key
-EMAIL_FROM=Society Management System <no-reply@yourdomain.com>
-JWT_SECRET=replace_with_a_long_random_access_token_secret
-REFRESH_TOKEN_SECRET=replace_with_a_different_long_random_refresh_token_secret
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-ALLOW_MULTIPLE_TENANTS=true
-```
+For Windows Command Prompt:
 
 ```bash
-# Start the API server
+copy .env.example .env
+```
+
+For Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Start the backend server:
+
+```bash
 npm run dev
 ```
 
-### 2. Frontend Setup
+The backend runs at:
+
+```text
+http://localhost:5000
+```
+
+The API base URL is:
+
+```text
+http://localhost:5000/api
+```
+
+---
+
+## Frontend Setup
+
+Open another terminal:
 
 ```bash
 cd user/UrbanNest
-npm install
 
-# Copy and configure environment variables
+npm install
+```
+
+Copy the example environment file:
+
+```bash
 cp .env.example .env
 ```
 
-Configure `user/UrbanNest/.env`:
-
-```env
-VITE_APP_NAME=UrbanNest
-VITE_API_BASE_URL=http://localhost:5000/api
-VITE_APP_ENV=development
-```
+For Windows Command Prompt:
 
 ```bash
-# Start the dev server
+copy .env.example .env
+```
+
+For Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Start the frontend development server:
+
+```bash
 npm run dev
 ```
 
-The frontend runs at `http://localhost:5173` and expects the API at `http://localhost:5000/api` by default.
+The frontend runs at:
 
-## Scripts Reference
+```text
+http://localhost:5173
+```
 
-### Backend (`server/package.json`)
+---
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start API server with `node server.js` |
-| `npm start` | Start API server (production) |
+# 📄 Environment Variables
 
-### Frontend (`user/UrbanNest/package.json`)
+## Backend Environment Variables
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | TypeScript check + production build |
-| `npm run preview` | Preview production build |
-| `npm run lint` | Lint with ESLint |
-| `npm run format` | Format `.ts`/`.tsx` files with Prettier |
-| `npm run typecheck` | TypeScript type checking only |
+Create a `.env` file inside the `server` directory:
 
-## Architecture Notes
+```env
+PORT=5000
 
-- **Auth flow**: JWT access + refresh tokens, `bcrypt` password hashing, email verification and password reset flows (`auth.routes.js`, `email.service.js`).
-- **File uploads**: Handled via Multer, stored on Cloudinary (`multer-storage-cloudinary`); used for profile images and resident documents.
-- **State management**: Redux Toolkit slices per feature, persisted via `redux-persist`, with typed `useAppDispatch` / `useAppSelector` hooks.
-- **Route protection**: `protected-route.tsx`, `public-route.tsx`, and `role-route.tsx` gate access based on auth state and user role.
-- **Error handling**: Centralized API error middleware (`error.middleware.js`, `errorHandler.js`) and dedicated frontend error pages for 403/404/500.
-- **Import aliases**: Configured via `tsconfig.json` / `vite.config.ts` for clean `@/` imports on the frontend.
+MONGO_URI=mongodb://127.0.0.1:27017/urban-nest
 
-## Contributing
+CLIENT_URL=http://localhost:5173
 
-1. Create a feature branch from `main`.
-2. Follow existing folder conventions (feature-first on the frontend, layered on the backend: routes → controllers → services → models).
-3. Run `npm run lint` and `npm run typecheck` (frontend) before committing.
-4. Keep `.env.example` files updated when introducing new environment variables.
-5. Submit a pull request with a clear description of changes.
+API_URL=http://localhost:5000/api
 
-## ⚠️ Important — Before Deploying to Production
+JWT_SECRET=replace_with_a_long_random_access_token_secret
 
-- **Never commit `.env` files** — only `.env.example` should be tracked in git.
-- **Rotate all secrets** (`JWT_SECRET`, `REFRESH_TOKEN_SECRET`, Cloudinary keys, Razorpay keys) before going live; do not reuse development values.
-- **Set `ALLOW_MULTIPLE_TENANTS`** deliberately — confirm whether your deployment should support multiple societies/tenants or a single one.
-- **Update `CLIENT_URL` / `VITE_API_BASE_URL`** to production domains to avoid CORS and API-connectivity issues.
-- **Enable HTTPS** in front of the API (Helmet's protections assume a secure transport).
-- **Review rate limits** (`express-rate-limit`) for auth and payment endpoints under real traffic.
-- **Back up MongoDB** regularly, especially before schema-changing deployments.
+REFRESH_TOKEN_SECRET=replace_with_a_different_long_random_refresh_token_secret
 
-## License
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 
-Private - All rights reserved
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+RESEND_API_KEY=your_resend_api_key
+
+EMAIL_FROM=Society Management System <no-reply@yourdomain.com>
+
+ALLOW_MULTIPLE_TENANTS=true
+```
+
+---
+
+## Frontend Environment Variables
+
+Create a `.env` file inside `user/UrbanNest`:
+
+```env
+VITE_APP_NAME=UrbanNest
+
+VITE_API_BASE_URL=http://localhost:5000/api
+
+VITE_APP_ENV=development
+```
+
+---
+
+# 🤖 SEO Configuration
+
+UrbanNest includes `robots.txt` and `sitemap.xml` files to help search engines discover public pages while preventing authenticated and private application routes from being indexed.
+
+Both files are stored in the frontend `public` directory.
+
+```text
+user/
+└── UrbanNest/
+    └── public/
+        ├── robots.txt
+        └── sitemap.xml
+```
+
+Files stored in the Vite `public` directory are copied directly to the root of the production build.
+
+After deployment, they will be available at:
+
+```text
+https://your-domain.com/robots.txt
+https://your-domain.com/sitemap.xml
+```
+
+---
+
+## robots.txt
+
+File location:
+
+```text
+user/UrbanNest/public/robots.txt
+```
+
+Current configuration:
+
+```txt
+User-agent: *
+Allow: /
+
+# Authenticated Committee Head and Committee Member areas.
+Disallow: /dashboard
+Disallow: /residents
+Disallow: /committee-members
+Disallow: /security-guards
+Disallow: /towers
+Disallow: /flats
+Disallow: /reports
+Disallow: /audit-logs
+Disallow: /complaints/assigned
+Disallow: /bookings/assigned
+Disallow: /maintenance
+Disallow: /payments
+
+# Account-specific and operational pages.
+Disallow: /profile
+Disallow: /settings
+Disallow: /notifications
+Disallow: /visitor-passes
+Disallow: /visitors
+Disallow: /amenities
+Disallow: /parcels
+Disallow: /emergency
+
+Sitemap: https://urbannest.example/sitemap.xml
+```
+
+The configuration:
+
+* Allows search engines to crawl public pages.
+* Blocks authenticated dashboard routes.
+* Blocks resident and committee management pages.
+* Blocks payment and maintenance pages.
+* Blocks personal profile and account pages.
+* Blocks visitor, parcel, emergency, and operational routes.
+* Provides the sitemap URL to search engine crawlers.
+
+Before production deployment, replace:
+
+```text
+https://urbannest.example
+```
+
+with the real production domain.
+
+Example:
+
+```txt
+Sitemap: https://urbannest.com/sitemap.xml
+```
+
+---
+
+## sitemap.xml
+
+File location:
+
+```text
+user/UrbanNest/public/sitemap.xml
+```
+
+Current configuration:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://urbannest.example/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://urbannest.example/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://urbannest.example/register</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://urbannest.example/forgot-password</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+</urlset>
+```
+
+The sitemap currently includes these public routes:
+
+| Route              | Change Frequency | Priority |
+| ------------------ | ---------------: | -------: |
+| `/`                |           Weekly |      1.0 |
+| `/login`           |          Monthly |      0.4 |
+| `/register`        |          Monthly |      0.4 |
+| `/forgot-password` |           Yearly |      0.2 |
+
+Before production deployment, replace every occurrence of:
+
+```text
+https://urbannest.example
+```
+
+with the real production domain.
+
+Example:
+
+```xml
+<loc>https://urbannest.com/</loc>
+```
+
+---
+
+## Public Routes Only
+
+Only publicly accessible pages should be added to `sitemap.xml`.
+
+Good sitemap routes:
+
+```text
+/
+/about
+/contact
+/features
+/login
+/register
+/forgot-password
+/privacy-policy
+/terms-and-conditions
+```
+
+Do not add private or authenticated routes such as:
+
+```text
+/dashboard
+/profile
+/settings
+/residents
+/committee-members
+/security-guards
+/payments
+/maintenance
+/notifications
+/visitors
+/reports
+/audit-logs
+```
+
+---
+
+## Important SEO Note
+
+`robots.txt` controls crawler access, but it is not an authentication or security system.
+
+Sensitive routes must always be protected using:
+
+* Backend authentication middleware
+* Role-based authorization
+* Protected frontend routes
+* API permission checks
+* Secure session or token validation
+
+Never rely only on `robots.txt` to protect private user information.
+
+---
+
+# 🚀 Architecture
+
+```text
+React Frontend
+       │
+       ▼
+ Redux Toolkit
+       │
+       ▼
+ Axios API
+       │
+       ▼
+Express REST API
+       │
+       ▼
+ Service Layer
+       │
+       ▼
+ MongoDB
+```
+
+---
+
+# 📌 Development Workflow
+
+```text
+Routes
+      ↓
+Controllers
+      ↓
+Services
+      ↓
+Models
+      ↓
+Database
+```
+
+The backend follows a layered structure:
+
+1. Routes receive the HTTP request.
+2. Validators validate request data.
+3. Middleware verifies authentication and permissions.
+4. Controllers handle the request and response.
+5. Services contain business logic.
+6. Models communicate with MongoDB.
+
+---
+
+# 📜 Scripts
+
+## Backend Scripts
+
+Run these commands inside the `server` directory:
+
+```bash
+npm run dev
+```
+
+Starts the backend development server.
+
+```bash
+npm start
+```
+
+Starts the backend production server.
+
+---
+
+## Frontend Scripts
+
+Run these commands inside `user/UrbanNest`:
+
+```bash
+npm run dev
+```
+
+Starts the Vite development server.
+
+```bash
+npm run build
+```
+
+Runs TypeScript checks and creates the production build.
+
+```bash
+npm run preview
+```
+
+Previews the production build locally.
+
+```bash
+npm run lint
+```
+
+Checks the project using ESLint.
+
+```bash
+npm run format
+```
+
+Formats TypeScript and TSX files using Prettier.
+
+```bash
+npm run typecheck
+```
+
+Runs TypeScript type checking without creating a build.
+
+---
+
+# 🛡 Security
+
+UrbanNest includes multiple security layers:
+
+* Helmet security headers
+* CORS configuration
+* Password hashing with bcrypt
+* JWT access tokens
+* JWT refresh tokens
+* Role-based authorization
+* Protected API routes
+* Request validation
+* Express rate limiting
+* Secure Cloudinary uploads
+* Environment-based secrets
+* Centralized error handling
+* Private route protection
+* Restricted crawler access
+
+---
+
+
+
+# 📜 License
+
+This repository is private.
+
+All Rights Reserved © UrbanNest.
+
+Unauthorized copying, modification, distribution, or use of this project is prohibited.
+
+---
+
+<div align="center">
+
+### Built with ❤️ using React, TypeScript, Express, MongoDB & Tailwind CSS
+
+**UrbanNest — Connected Communities. Simplified Management.**
+
+</div>
