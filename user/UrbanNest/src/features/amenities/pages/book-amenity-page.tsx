@@ -45,7 +45,13 @@ export function BookAmenityPage() {
   const submit = async (values: AmenityBookingFormValues) => {
     const booking = await dispatch(
       createAmenityBooking({
-        input: values,
+        input: {
+          amenityId: values.amenityId,
+          bookingDate: values.bookingDate,
+          slotId: values.slotId || "",
+          guests: values.guests,
+          purpose: values.purpose,
+        },
         resident: {
           id: user?.id ?? "mock-resident",
           name: user ? `${user.firstName} ${user.lastName}` : "Resident",
