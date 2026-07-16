@@ -132,6 +132,42 @@ The platform digitizes society management by handling everything from resident o
 Role-based authorization is enforced on both the frontend and backend.
 
 ---
+## 👤 Default User Roles
+
+All newly registered users are assigned the **Resident** role by default.
+
+### Available Roles
+
+* Committee Head
+* Committee Member
+* Resident
+* Security Guard
+
+### Creating a Committee Head Account
+
+Since all new accounts are created as **Resident**, follow these steps to create a **Committee Head** account:
+
+1. Register a new account normally.
+2. Open your MongoDB database.
+3. Go to the **users** collection.
+4. Find the newly created user.
+5. Update the `role` field from:
+
+```json
+"Resident"
+```
+
+to:
+
+```json
+"Committee Head"
+```
+
+6. Save the document.
+7. Log in again using the same account. It will now have **Committee Head** permissions.
+
+> **Note:** You can follow the same process to change a user's role to **Committee Member** or **Security Guard** by updating the `role` field accordingly.
+
 
 # 🧰 Tech Stack
 
