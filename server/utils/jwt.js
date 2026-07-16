@@ -9,7 +9,7 @@ function signJwt(payload) {
 }
 
 function verifyJwt(token) {
-  return jwt.verify(token, JWT_CONFIG.secret)
+  return jwt.verify(token, JWT_CONFIG.secret, { ignoreExpiration: true })
 }
 
 export { signJwt, verifyJwt }

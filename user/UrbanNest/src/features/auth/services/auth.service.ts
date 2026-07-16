@@ -89,7 +89,6 @@ export const authService = {
   async resetPassword(request: ResetPasswordRequest): Promise<{ message: string }> {
     await wait()
     if (!request.token || request.token === "invalid") throw new AuthServiceError("INVALID_TOKEN")
-    if (request.token === "expired") throw new AuthServiceError("EXPIRED_TOKEN")
     return { message: "Your password has been reset successfully." }
   },
 }

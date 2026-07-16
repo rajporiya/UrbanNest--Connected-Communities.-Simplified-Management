@@ -42,7 +42,7 @@ const EditFlatPage = lazy(() => import("@/features/flats/pages/edit-flat-page").
 const VisitorsPage = lazy(() => import("@/features/visitors").then((module) => ({ default: module.VisitorsPage })))
 const CreateVisitorPassPage = lazy(() => import("@/features/visitors").then((module) => ({ default: module.CreateVisitorPassPage })))
 const VisitorDetailsPage = lazy(() => import("@/features/visitors").then((module) => ({ default: module.VisitorDetailsPage })))
-const VerifyVisitorPage = lazy(() => import("@/features/visitors").then((module) => ({ default: module.VerifyVisitorPage })))
+
 const ComplaintsPage = lazy(() => import("@/features/complaints").then((module) => ({ default: module.ComplaintsPage })))
 const CreateComplaintPage = lazy(() => import("@/features/complaints").then((module) => ({ default: module.CreateComplaintPage })))
 const ComplaintDetailsPage = lazy(() => import("@/features/complaints").then((module) => ({ default: module.ComplaintDetailsPage })))
@@ -94,7 +94,7 @@ const GUARD_ONLY: UserRole[] = [ROLES.SECURITY_GUARD]
 const ALL_ROLES: UserRole[] = [ROLES.COMMITTEE_HEAD, ROLES.COMMITTEE_MEMBER, ROLES.RESIDENT, ROLES.SECURITY_GUARD]
 const COMMUNITY_ROLES: UserRole[] = [ROLES.COMMITTEE_HEAD, ROLES.COMMITTEE_MEMBER, ROLES.RESIDENT]
 const VISITOR_ROLES: UserRole[] = ALL_ROLES
-const VISITOR_CREATORS: UserRole[] = [ROLES.COMMITTEE_HEAD, ROLES.COMMITTEE_MEMBER, ROLES.RESIDENT]
+const VISITOR_CREATORS: UserRole[] = [ROLES.COMMITTEE_HEAD, ROLES.COMMITTEE_MEMBER, ROLES.RESIDENT, ROLES.SECURITY_GUARD]
 const AMENITY_ROLES: UserRole[] = [ROLES.COMMITTEE_HEAD, ROLES.COMMITTEE_MEMBER, ROLES.RESIDENT]
 const COMMUNITY_MANAGERS: UserRole[] = [ROLES.COMMITTEE_HEAD, ROLES.COMMITTEE_MEMBER]
 const PARKING_MANAGERS: UserRole[] = [ROLES.COMMITTEE_HEAD, ROLES.COMMITTEE_MEMBER]
@@ -173,14 +173,14 @@ export function AppRouter() {
                 <Route path={ROUTES.AMENITY_BOOK} element={<BookAmenityPage />} />
               </Route>
               <Route element={<RoleRoute allowedRoles={GUARD_ONLY} />}>
-                <Route path={ROUTES.SCAN_VISITOR} element={<VerifyVisitorPage />} />
+                <Route path={ROUTES.SCAN_VISITOR} element={<CreateVisitorPassPage />} />
                 <Route path={ROUTES.VISITOR_HISTORY} element={<VisitorsPage />} />
               </Route>
               <Route element={<RoleRoute allowedRoles={VISITOR_CREATORS} />}>
                 <Route path={ROUTES.VISITOR_NEW} element={<CreateVisitorPassPage />} />
               </Route>
               <Route element={<RoleRoute allowedRoles={[ROLES.COMMITTEE_HEAD, ROLES.SECURITY_GUARD]} />}>
-                <Route path={ROUTES.VISITOR_VERIFY} element={<VerifyVisitorPage />} />
+                <Route path={ROUTES.VISITOR_VERIFY} element={<CreateVisitorPassPage />} />
               </Route>
               <Route element={<RoleRoute allowedRoles={VISITOR_ROLES} />}>
                 <Route path={ROUTES.VISITORS} element={<VisitorsPage />} />

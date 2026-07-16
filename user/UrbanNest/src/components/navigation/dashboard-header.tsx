@@ -81,9 +81,11 @@ export function DashboardHeader({ title = "Dashboard", breadcrumbs, onOpenMobile
                   <RoleBadge role={user.role} className="mt-2" />
                 </div>
                 <Separator className="my-1" />
-                <Menu.Item render={<Link to={ROUTES.PROFILE} />} className="flex cursor-default items-center gap-2 rounded-lg px-2.5 py-2 text-sm outline-none data-highlighted:bg-accent">
-                  <UserRound aria-hidden="true" className="size-4" /> My Profile
-                </Menu.Item>
+                {user.role !== "security_guard" && (
+                  <Menu.Item render={<Link to={ROUTES.PROFILE} />} className="flex cursor-default items-center gap-2 rounded-lg px-2.5 py-2 text-sm outline-none data-highlighted:bg-accent">
+                    <UserRound aria-hidden="true" className="size-4" /> My Profile
+                  </Menu.Item>
+                )}
                 <Menu.Item render={<Link to={ROUTES.SETTINGS} />} className="flex cursor-default items-center gap-2 rounded-lg px-2.5 py-2 text-sm outline-none data-highlighted:bg-accent">
                   <Settings aria-hidden="true" className="size-4" /> Settings
                 </Menu.Item>

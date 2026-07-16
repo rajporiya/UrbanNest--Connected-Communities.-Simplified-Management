@@ -5,7 +5,6 @@ import {
   LogIn,
   LogOut,
   Plus,
-  ScanLine,
   UsersRound,
 } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
@@ -150,16 +149,10 @@ export function VisitorsPage() {
     )
   if (user?.role === ROLES.SECURITY_GUARD)
     actions = (
-      <div className="flex gap-2">
-        <Button render={<Link to={`${ROUTES.VISITORS}/verify`} />}>
-          <ScanLine />
-          Verify pass
-        </Button>
-        <Button render={<Link to={`${ROUTES.VISITORS}/new`} />}>
-          <Plus />
-          Add manually
-        </Button>
-      </div>
+      <Button render={<Link to={`${ROUTES.VISITORS}/new`} />}>
+        <Plus />
+        Add manually
+      </Button>
     )
   return (
     <div className="space-y-6">

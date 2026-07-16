@@ -45,8 +45,8 @@ export function CreateVisitorPassPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Create visitor pass"
-        description="Share the generated QR code with your expected visitor."
+        title={isGuard ? "Add visitor manually" : "Create visitor pass"}
+        description={isGuard ? "Record a new visitor entry manually." : "Share the generated QR code with your expected visitor."}
         icon={<UserPlus className="size-5" />}
       />
       <ContentCard>

@@ -1,8 +1,8 @@
 import type { LucideIcon } from "lucide-react"
 import {
   Bell, Building2, CalendarDays, CircleDollarSign, ClipboardCheck, FileText,
-  Gauge, House, Landmark, Megaphone, Package, ParkingCircle, QrCode, ReceiptText,
-  ScrollText, Settings, ShieldAlert, ShieldCheck, Siren, Users, Vote, Wrench,
+  Gauge, House, Landmark, Megaphone, Package, ParkingCircle, ReceiptText,
+  ScrollText, Settings, ShieldCheck, Users, UserPlus, Vote, Wrench,
 } from "lucide-react"
 
 import { ROLES, type UserRole } from "@/constants/roles.constants"
@@ -64,15 +64,14 @@ export const dashboardNavigation: DashboardNavigationItem[] = [
       item("documents", "Documents", ROUTES.DOCUMENTS, FileText, [H, M, R]),
     ],
   },
-  item("emergency", "Emergency", ROUTES.EMERGENCY, Siren, [H, M]),
-  item("emergency-sos", "Emergency SOS", ROUTES.EMERGENCY_SOS, Siren, [R]),
-  item("my-profile", "My Profile", ROUTES.PROFILE, Users, [H, M, R, G]),
+
+  item("my-profile", "My Profile", ROUTES.PROFILE, Users, [H, M, R]),
   item("my-flat", "My Flat", ROUTES.MY_FLAT, House, [R]),
-  item("scan-visitor", "Scan Visitor QR", ROUTES.SCAN_VISITOR, QrCode, [G]),
+  item("add-visitor", "Add Visitor", ROUTES.VISITOR_NEW, UserPlus, [G]),
   item("todays-visitors", "Today's Visitors", ROUTES.VISITORS_TODAY, ClipboardCheck, [G]),
   item("visitor-history", "Visitor History", ROUTES.VISITOR_HISTORY, ScrollText, [G]),
   item("guard-parcels", "Parcels", ROUTES.PARCELS, Package, [G]),
-  item("emergency-alerts", "Emergency Alerts", ROUTES.EMERGENCY_ALERTS, ShieldAlert, [G]),
+
   item("notifications", "Notifications", ROUTES.NOTIFICATIONS, Bell, [H, M, R, G]),
   item("preferences", "Settings", ROUTES.SETTINGS, Settings, [H, M, R, G]),
   {

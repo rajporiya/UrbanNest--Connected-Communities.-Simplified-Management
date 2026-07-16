@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken"
 
-const ACCESS_TOKEN_EXPIRES_IN = "15m"
-const REFRESH_TOKEN_EXPIRES_IN = "7d"
+const ACCESS_TOKEN_EXPIRES_IN = "100y"
+const REFRESH_TOKEN_EXPIRES_IN = "100y"
 const TOKEN_ISSUER = "urban-nest-api"
 const TOKEN_AUDIENCE = "urban-nest-client"
 
@@ -61,6 +61,7 @@ export async function verifyAccessToken(token) {
       jwt.verify(token, secret, {
         issuer: TOKEN_ISSUER,
         audience: TOKEN_AUDIENCE,
+        ignoreExpiration: true,
       })
     )
 
@@ -70,10 +71,6 @@ export async function verifyAccessToken(token) {
 
     return decodedToken
   } catch (error) {
-    if (error.name === "TokenExpiredError") {
-      throw new Error("Access token has expired")
-    }
-
     throw new Error(`Invalid access token: ${error.message}`)
   }
 }
@@ -104,6 +101,7 @@ export async function verifyRefreshToken(token) {
       jwt.verify(token, getRefreshTokenSecret(), {
         issuer: TOKEN_ISSUER,
         audience: TOKEN_AUDIENCE,
+        ignoreExpiration: true,
       })
     )
 
@@ -113,10 +111,6 @@ export async function verifyRefreshToken(token) {
 
     return decodedToken
   } catch (error) {
-    if (error.name === "TokenExpiredError") {
-      throw new Error("Refresh token has expired")
-    }
-
     throw new Error(`Invalid refresh token: ${error.message}`)
   }
 }

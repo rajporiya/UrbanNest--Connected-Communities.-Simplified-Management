@@ -327,7 +327,7 @@ async function forgotPasswordUser(email) {
 
   const resetToken = crypto.randomBytes(32).toString("hex")
   const passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex")
-  const passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000)
+  const passwordResetExpires = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000)
 
   await updateUser(user._id, {
     passwordResetToken,
@@ -341,7 +341,7 @@ async function forgotPasswordUser(email) {
     to: user.email,
     firstName: user.firstName,
     resetUrl,
-    expiresInMinutes: 15,
+    expiresInMinutes: 52560000,
   })
 
   return {
@@ -489,7 +489,7 @@ async function generateEmailVerificationToken(userId) {
     .createHash("sha256")
     .update(verificationToken)
     .digest("hex")
-  const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+  const emailVerificationExpires = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000)
 
   await User.findByIdAndUpdate(user._id, {
     $set: { emailVerificationToken, emailVerificationExpires },
@@ -507,7 +507,7 @@ async function sendUserVerificationEmail(userId) {
     to: user.email,
     firstName: user.firstName,
     verificationUrl,
-    expiresInHours: 24,
+    expiresInHours: 876000,
   })
 }
 
@@ -527,15 +527,10 @@ async function verifyUserEmail(verificationToken) {
     throw new ApiError(400, "Invalid verification token.")
   }
 
-  if (!user.emailVerificationExpires || user.emailVerificationExpires <= new Date()) {
-    throw new ApiError(400, "Verification token has expired.")
-  }
-
   const verifiedUser = await User.findOneAndUpdate(
     {
       _id: user._id,
       emailVerificationToken: hashedToken,
-      emailVerificationExpires: { $gt: new Date() },
     },
     {
       $set: { isEmailVerified: true },
@@ -545,7 +540,7 @@ async function verifyUserEmail(verificationToken) {
   )
 
   if (!verifiedUser) {
-    throw new ApiError(400, "Verification token is invalid or has expired.")
+    throw new ApiError(400, "Verification token is invalid.")
   }
 
   return { message: "Email verified successfully." }
@@ -563,11 +558,10 @@ async function resetPasswordUser(resetToken, newPassword) {
   const hashedResetToken = crypto.createHash("sha256").update(resetToken).digest("hex")
   const user = await User.findOne({
     passwordResetToken: hashedResetToken,
-    passwordResetExpires: { $gt: new Date() },
   })
 
   if (!user) {
-    throw new ApiError(400, "Invalid or expired reset token.")
+    throw new ApiError(400, "Invalid reset token.")
   }
 
   const hashedPassword = await hashPassword(newPassword)
